@@ -1,0 +1,13 @@
+dependencies {
+    // timber
+    implementation "com.jakewharton.timber:timber:$timberVersion"
+
+    // leak canary
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
+
+    // paging (if your app require paging)
+    implementation "androidx.paging:paging-compose:1.0.0-alpha15"
+
+    // date (if your app require date to be serialized)
+    implementation "org.jetbrains.kotlinx:kotlinx-datetime:0.3.2"
+}
