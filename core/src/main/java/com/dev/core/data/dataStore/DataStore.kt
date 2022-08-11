@@ -5,10 +5,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.dev.core.BuildConfig
+import javax.inject.Inject
+import javax.inject.Singleton
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = BuildConfig.DATA_STORE_NAME)
 
-class DataStore(
+@Singleton
+class DataStore @Inject constructor(
     private val context: Context
 ) {
 

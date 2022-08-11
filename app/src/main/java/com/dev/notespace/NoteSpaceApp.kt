@@ -10,10 +10,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.dev.notespace.navigation.NoteSpaceNavigation
+import com.dev.notespace.navigation.NoteSpaceRegis
+import com.dev.notespace.screen.LoginScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun BaseApp() {
+fun NoteSpaceApp() {
     val allScreens = null
     val navController = rememberNavController()
     val backStackEntry = navController.currentBackStackEntryAsState()
@@ -41,7 +44,7 @@ fun BaseApp() {
         },
         scaffoldState = scaffoldState
     ) { paddingValues ->
-        BaseNavHost(
+        NoteSpaceNavHost(
             modifier = Modifier.padding(paddingValues),
             navController = navController,
             showSnackBar = { message ->
@@ -56,18 +59,24 @@ fun BaseApp() {
 }
 
 @Composable
-fun BaseNavHost(
+private fun NoteSpaceNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     showSnackBar: (String) -> Unit
 ) {
     NavHost(
         navController = navController,
-        startDestination = "Splash", // change to your screen first destinaton
+        startDestination = NoteSpaceRegis.Login.name,
         modifier = modifier
     ) {
-        composable("Base") { // just a placeholder -> change to your screen route
-
+        composable(NoteSpaceRegis.Login.name) {
+            LoginScreen(
+                navigateToHome = { navController.navigate(NoteSpaceNavigation.Home.name) },
+                navigateToOtp = { number, verificationId ->
+                    navController.navigate("${NoteSpaceRegis.MobileOtp.name}/$number/$verificationId")
+                },
+                navigateToRegister =  { navController.navigate(NoteSpaceRegis.RegisterLanding.name) }
+            )
         }
     }
 }
