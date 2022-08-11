@@ -90,9 +90,10 @@ fun LoginScreen(
     LoginContent(
         modifier = modifier,
         sendVerificationCode = {
-            viewModel.sendVerificationCode(
-                activity, identifier, callbacks
-            )
+                               navigateToOtp("08", "123456")
+//            viewModel.sendVerificationCode(
+//                activity, identifier, callbacks
+//            )
         },
         loginWithEmail = {
             viewModel.signInWithEmail(identifier, password)
@@ -291,11 +292,11 @@ private fun onButtonLoginClick(
             setIdentifierDescription("Mobile No Length Must Be Greater Than 8")
             showIdentifierError(true)
         }
-        identifier.startsWith("+628") && identifier.length >= 13 -> {
-            setIdentifierDescription("Mobile No Length Must Be Less Than 8")
+        identifier.startsWith("+628") && identifier.length >= 15 -> {
+            setIdentifierDescription("Mobile No Length Must Be Less Than 13")
             showIdentifierError(true)
         }
-        identifier.startsWith("+628") && identifier.length <= 13 && identifier.length >= 8 -> {
+        identifier.startsWith("+628") && identifier.length <= 15 && identifier.length >= 8 -> {
             showLoading(true)
             loginWithNumber()
         }
