@@ -29,9 +29,12 @@ class NoteSpaceInteractor @Inject constructor(
     override fun signInWithCredential(credential: PhoneAuthCredential): Task<AuthResult> =
         repository.signInWithCredential(credential)
 
-    override fun signInWithEmail(email: String, password: String): Task<AuthResult> =
-        repository.signInWithEmail(email, password)
+    override fun sendEmailLink(email: String): Task<Void> =
+        repository.sendEmailLink(email)
 
-    override fun createWithEmail(email: String, password: String): Task<AuthResult> =
-        repository.createWithEmail(email, password)
+    override fun isSignInLink(emailLink: String): Boolean =
+        repository.isSignInLink(emailLink)
+
+    override fun signInWithEmail(email: String, emailLink: String): Task<AuthResult> =
+        repository.signInWithEmail(email, emailLink)
 }

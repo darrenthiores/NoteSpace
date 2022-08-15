@@ -22,6 +22,4 @@ class LoginViewModel @Inject constructor(
         number = phoneNumber,
         callback = callback
     )
-    fun signInWithEmail(email: String, password: String): Task<AuthResult> =
-        noteSpaceUseCase.signInWithEmail(email, password)
 }

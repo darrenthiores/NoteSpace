@@ -35,14 +35,13 @@ fun DataInput(
     error: Boolean,
     errorDescription: String,
     showError: (Boolean) -> Unit,
-    maxLength: Int = 20,
-    type: String = ""
+    maxLength: Int = 20
 ) {
     OutlinedTextField(
         value = currentText,
         onValueChange = { text ->
             if(text.length <= maxLength) {
-                if(type != "digit") onTextChange(text) else onTextChange(text.filter { it.isDigit() })
+                onTextChange(text)
             }
             showError(false)
         },
@@ -74,6 +73,83 @@ fun DataInput(
             textAlign = TextAlign.Start
         )
     }
+}
+
+@Composable
+fun DigitDataInput(
+    modifier: Modifier = Modifier,
+    label: String,
+    currentText: String,
+    onTextChange: (String) -> Unit,
+    error: Boolean,
+    errorDescription: String,
+    showError: (Boolean) -> Unit,
+    maxLength: Int = 20
+) {
+    OutlinedTextField(
+        value = currentText,
+        onValueChange = { text ->
+            if(text.length <= maxLength) {
+                onTextChange(text)
+            }
+            showError(false)
+        },
+        label = { Text(text = label) },
+        isError = error,
+        trailingIcon = {
+            if(error) {
+                Icon(
+                    imageVector = Icons.Filled.Error,
+                    contentDescription = errorDescription,
+                    tint = MaterialTheme.colors.error
+                )
+            }
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 4.dp)
+    )
+    if(error) {
+        Text(
+            text = errorDescription,
+            color = MaterialTheme.colors.error,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            textAlign = TextAlign.Start
+        )
+    }
+}
+
+@Composable
+fun NonErrorDataInput(
+    modifier: Modifier = Modifier,
+    label: String,
+    currentText: String,
+    onTextChange: (String) -> Unit,
+    maxLength: Int = 20,
+    type: String = ""
+) {
+    OutlinedTextField(
+        value = currentText,
+        onValueChange = { text ->
+            if(text.length <= maxLength) {
+                if(type != "digit") onTextChange(text) else onTextChange(text.filter { it.isDigit() })
+            }
+        },
+        label = { Text(text = label) },
+        singleLine = true,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 4.dp)
+    )
 }
 
 @Composable
@@ -176,7 +252,7 @@ fun OtpTextFields(
                         val cellValue = enteredNumbers[index]
                         if (event.type == KeyEventType.KeyUp) {
                             if (event.key == Key.Backspace && cellValue == "") {
-                                if(index>0) {
+                                if (index > 0) {
                                     focusRequesters
                                         .getOrNull(index - 1)
                                         ?.requestFocus()

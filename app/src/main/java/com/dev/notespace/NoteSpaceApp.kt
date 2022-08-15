@@ -17,6 +17,7 @@ import com.dev.notespace.navigation.NoteSpaceNavigation
 import com.dev.notespace.navigation.NoteSpaceRegis
 import com.dev.notespace.screen.LoginScreen
 import com.dev.notespace.screen.MobileOtpScreen
+import com.dev.notespace.screen.RegisterScreen
 import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi
@@ -77,15 +78,14 @@ private fun NoteSpaceNavHost(
     ) {
         composable(NoteSpaceRegis.Login.name) {
             LoginScreen(
-                navigateToHome = { navController.navigate(NoteSpaceNavigation.Home.name) },
                 navigateToOtp = { number, verificationId ->
-                    navController.navigate("${NoteSpaceRegis.MobileOtp.name}/$number/$verificationId")
+                    navController.navigate("${NoteSpaceRegis.Otp.name}/$number/$verificationId")
                 },
-                navigateToRegister =  { navController.navigate(NoteSpaceRegis.RegisterLanding.name) }
+                navigateToRegister =  { navController.navigate(NoteSpaceRegis.Register.name) }
             )
         }
         composable(
-            route = "${NoteSpaceRegis.MobileOtp.name}/{number}/{verificationId}",
+            route = "${NoteSpaceRegis.Otp.name}/{number}/{verificationId}",
             arguments = listOf(
                 navArgument("number") {
                     type = NavType.StringType
@@ -102,6 +102,13 @@ private fun NoteSpaceNavHost(
                 verification_id = verificationId ?: "",
                 showSnackBar = showSnackBar,
                 navigateToHome = { navController.navigate(NoteSpaceNavigation.Home.name) }
+            )
+        }
+        composable(NoteSpaceRegis.Register.name) {
+            RegisterScreen(
+                navigateToOtp = { number, verificationId ->
+                    navController.navigate("${NoteSpaceRegis.Otp.name}/$number/$verificationId")
+                }
             )
         }
     }

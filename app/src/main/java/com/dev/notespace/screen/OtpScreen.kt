@@ -2,7 +2,6 @@ package com.dev.notespace.screen
 
 import android.app.Activity
 import android.os.CountDownTimer
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -18,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.notespace.component.CommonDialog
 import com.dev.notespace.component.OtpTextFields
-import com.dev.notespace.viewModel.MobileOtpViewModel
+import com.dev.notespace.viewModel.OtpViewModel
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
@@ -28,7 +27,7 @@ import timber.log.Timber
 @Composable
 fun MobileOtpScreen(
     modifier: Modifier = Modifier,
-    viewModel: MobileOtpViewModel = hiltViewModel(),
+    viewModel: OtpViewModel = hiltViewModel(),
     number: String,
     verification_id: String,
     showSnackBar: (String) -> Unit,

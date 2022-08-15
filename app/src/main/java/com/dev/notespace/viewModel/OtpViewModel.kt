@@ -11,7 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class MobileOtpViewModel @Inject constructor(
+class OtpViewModel @Inject constructor(
     private val noteSpaceUseCase: NoteSpaceUseCase
 ): ViewModel() {
     fun signInWithCredential(credential: PhoneAuthCredential): Task<AuthResult> =

@@ -35,9 +35,12 @@ class NoteSpaceNoteSpaceRepository @Inject constructor(
     override fun signInWithCredential(credential: PhoneAuthCredential): Task<AuthResult> =
         fbDataSource.signInWithCredential(credential)
 
-    override fun signInWithEmail(email: String, password: String): Task<AuthResult> =
-        fbDataSource.signInWithEmail(email, password)
+    override fun sendEmailLink(email: String): Task<Void> =
+        fbDataSource.sendEmailLink(email)
 
-    override fun createWithEmail(email: String, password: String): Task<AuthResult> =
-        fbDataSource.createWithEmail(email, password)
+    override fun isSignInLink(emailLink: String): Boolean =
+        fbDataSource.isSignInLink(emailLink)
+
+    override fun signInWithEmail(email: String, emailLink: String): Task<AuthResult> =
+        fbDataSource.signInWithEmail(email, emailLink)
 }

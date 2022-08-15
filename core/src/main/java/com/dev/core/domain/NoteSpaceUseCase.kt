@@ -19,7 +19,9 @@ interface NoteSpaceUseCase {
 
     fun signInWithCredential(credential: PhoneAuthCredential): Task<AuthResult>
 
-    fun signInWithEmail(email: String, password: String): Task<AuthResult>
+    fun sendEmailLink(email: String): Task<Void>
 
-    fun createWithEmail(email: String, password: String): Task<AuthResult>
+    fun isSignInLink(emailLink: String): Boolean
+
+    fun signInWithEmail(email: String, emailLink: String): Task<AuthResult>
 }
