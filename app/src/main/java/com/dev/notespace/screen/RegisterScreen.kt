@@ -16,10 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.notespace.R
-import com.dev.notespace.component.CommonDialog
-import com.dev.notespace.component.DataInput
-import com.dev.notespace.component.EducationDropDown
-import com.dev.notespace.component.PasswordInput
+import com.dev.notespace.component.*
 import com.dev.notespace.viewModel.LoginViewModel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
@@ -101,10 +98,9 @@ fun RegisterScreen(
     RegisterContent(
         modifier = modifier,
         sendVerificationCode = {
-            navigateToOtp("08", "123456")
-//            viewModel.sendVerificationCode(
-//                activity, identifier, callbacks
-//            )
+            viewModel.sendVerificationCode(
+                activity, "+62$identifier", callbacks
+            )
         },
         identifier = identifier,
         setIdentifier = setIdentifier,
@@ -203,7 +199,9 @@ private fun RegisterContent(
         )
         EducationDropDown(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp),
             education = education,
             onItemClicked = setEducation,
             error = educationError,
@@ -219,7 +217,7 @@ private fun RegisterContent(
             errorDescription = majorErrorDescription,
             showError = showMajorError
         )
-        DataInput(
+        DigitDataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Mobile No",
             currentText = identifier,
@@ -298,19 +296,19 @@ private fun onButtonRegisterClick(
             setIdentifierDescription("Identifier Field Cannot Be Empty")
             showIdentifierError(true)
         }
-        identifier.startsWith("08") -> {
-            setIdentifierDescription("Mobile no should start with +628")
+        !identifier.startsWith("08") -> {
+            setIdentifierDescription("Mobile no should start with 08")
             showIdentifierError(true)
         }
-        identifier.startsWith("+628") && identifier.length <= 8 -> {
+        identifier.startsWith("08") && identifier.length <= 8 -> {
             setIdentifierDescription("Mobile No Length Must Be Greater Than 8")
             showIdentifierError(true)
         }
-        identifier.startsWith("+628") && identifier.length >= 13 -> {
+        identifier.startsWith("08") && identifier.length >= 13 -> {
             setIdentifierDescription("Mobile No Length Must Be Less Than 13")
             showIdentifierError(true)
         }
-        identifier.startsWith("+628") && identifier.length <= 13 && identifier.length >= 8 -> {
+        identifier.startsWith("08") && identifier.length <= 13 && identifier.length >= 8 -> {
             showLoading(true)
             registerWithNumber()
         }
