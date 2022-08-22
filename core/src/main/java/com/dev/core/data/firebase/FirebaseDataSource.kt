@@ -2,9 +2,17 @@ package com.dev.core.data.firebase
 
 import android.app.Activity
 import android.content.Intent
+import com.dev.core.BuildConfig
+import com.dev.core.model.data.request.UserRequest
+import com.dev.core.model.data.response.UserResponse
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.actionCodeSettings
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.storage.FirebaseStorage
 import java.util.concurrent.TimeUnit
 
 class FirebaseDataSource {
@@ -14,6 +22,8 @@ class FirebaseDataSource {
     private val user = auth.currentUser
 
     fun getUser(): FirebaseUser? = user
+
+    fun logOut()= auth.signOut()
 
     fun linkEmail(credential: AuthCredential): Task<AuthResult>? =
         user?.linkWithCredential(credential)
@@ -38,23 +48,26 @@ class FirebaseDataSource {
     fun signInWithCredential(credential: PhoneAuthCredential): Task<AuthResult> =
         auth.signInWithCredential(credential)
 
-    fun sendEmailLink(
-        email: String
-    ): Task<Void> {
-        val actionCodeSettings = actionCodeSettings {
-            url = "https://www.example.com/finishSignUp?cartId=1234"
-            handleCodeInApp = true
-            setAndroidPackageName(
-                "com.example.android",
-                true,
-                "12")
-        }
-        return auth.sendSignInLinkToEmail(email, actionCodeSettings)
-    }
+    /**Firestore**/
+    private val fireStore = FirebaseFirestore.getInstance()
+    private val userCollection = fireStore.collection(BuildConfig.NOTESPACE_USER_COLLECTION)
+    private val mobileCollection = fireStore.collection(BuildConfig.NOTESPACE_NUMBER_COLLECTION)
+    private val postCollection = fireStore.collection(BuildConfig.NOTESPACE_POST_COLLECTION)
 
-    fun isSignInLink(emailLink: String): Boolean =
-        auth.isSignInWithEmailLink(emailLink)
+    // user related
+    fun setUser(user:UserRequest):Task<Void> = userCollection.document(auth.uid!!).set(user)
 
-    fun signInWithEmail(email: String, emailLink: String): Task<AuthResult> =
-        auth.signInWithEmailLink(email, emailLink)
+    fun checkPhoneNumber(phoneNumber:String): Task<QuerySnapshot> = mobileCollection.whereEqualTo("mobile", phoneNumber).get()
+
+    fun setPhoneNumber(phoneNumber: String):Task<Void> = mobileCollection.document(phoneNumber).set(
+        hashMapOf(
+            "mobile" to phoneNumber
+        ))
+
+    fun getUserData():Task<DocumentSnapshot> = userCollection.document(auth.uid!!).get()
+
+    /**Storage**/
+    private val storage = FirebaseStorage.getInstance()
+    private val storageReference = storage.reference
+
 }

@@ -3,6 +3,8 @@ package com.dev.notespace.viewModel
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import com.dev.core.domain.NoteSpaceUseCase
+import com.dev.core.model.presenter.User
+import com.dev.core.utils.DataMapper
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.PhoneAuthCredential
@@ -26,4 +28,13 @@ class OtpViewModel @Inject constructor(
         number = phoneNumber,
         callback = callback
     )
+
+    fun registerUser(user: User) =
+        noteSpaceUseCase.setUser(DataMapper.mapPresenterToDomain(user))
+
+    fun updateNumber(phoneNumber: String) =
+        noteSpaceUseCase.setPhoneNumber(phoneNumber)
+
+    fun logOut() =
+        noteSpaceUseCase.logOut()
 }

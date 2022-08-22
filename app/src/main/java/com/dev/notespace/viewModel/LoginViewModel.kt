@@ -7,6 +7,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.PhoneAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,4 +23,10 @@ class LoginViewModel @Inject constructor(
         number = phoneNumber,
         callback = callback
     )
+
+    fun checkPhoneNumber(
+        phoneNumber: String
+    ): Boolean = runBlocking {
+        noteSpaceUseCase.checkPhoneNumber(phoneNumber)
+    }
 }

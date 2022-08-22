@@ -75,10 +75,9 @@ fun LoginScreen(
     LoginContent(
         modifier = modifier,
         sendVerificationCode = {
-                               navigateToOtp("08", "123456")
-//            viewModel.sendVerificationCode(
-//                activity, identifier, callbacks
-//            )
+            viewModel.sendVerificationCode(
+                activity, identifier, callbacks
+            )
         },
         navigateToRegister = navigateToRegister,
         identifier = identifier,
@@ -87,6 +86,7 @@ fun LoginScreen(
         showIdentifierError = showIdentifierError,
         identifierErrorDescription = identifierErrorDescription,
         setIdentifierError = setIdentifierError,
+        checkPhoneNumber = { viewModel.checkPhoneNumber(identifier) },
         showDialog = showDialog,
         setMessage = setMessage,
         showLoading = showLoading
@@ -122,6 +122,7 @@ private fun LoginContent(
     showIdentifierError: (Boolean) -> Unit,
     identifierErrorDescription: String,
     setIdentifierError: (String) -> Unit,
+    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
@@ -163,6 +164,7 @@ private fun LoginContent(
                     identifier = identifier,
                     setIdentifierDescription = setIdentifierError,
                     showIdentifierError = showIdentifierError,
+                    checkPhoneNumber = checkPhoneNumber,
                     showDialog = showDialog,
                     setMessage = setMessage,
                     showLoading = showLoading
@@ -191,6 +193,7 @@ private fun onButtonLoginClick(
     identifier: String,
     setIdentifierDescription: (String) -> Unit,
     showIdentifierError: (Boolean) -> Unit,
+    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
@@ -214,7 +217,13 @@ private fun onButtonLoginClick(
         }
         identifier.startsWith("08") && identifier.length <= 13 && identifier.length >= 8 -> {
             showLoading(true)
-            loginWithNumber()
+            if(checkPhoneNumber()) {
+                setIdentifierDescription("Mobile No is Not Registered Yet!")
+                showIdentifierError(true)
+                showLoading(false)
+            } else {
+                loginWithNumber()
+            }
         }
     }
 }
