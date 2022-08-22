@@ -1,6 +1,10 @@
 package com.dev.core.data.local
 
-class LocalDataSource(
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class LocalDataSource @Inject constructor(
     private val baseDb: BaseDb
 ) {
 }

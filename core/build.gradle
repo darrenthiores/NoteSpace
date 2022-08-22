@@ -78,4 +78,8 @@ dependencies {
     // di (hilt)
     api "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+
+    // firebase
+    implementation platform('com.google.firebase:firebase-bom:30.3.1')
+    api 'com.google.firebase:firebase-auth-ktx'
 }

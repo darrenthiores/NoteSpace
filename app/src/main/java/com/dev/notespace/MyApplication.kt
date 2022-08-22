@@ -2,10 +2,11 @@ package com.dev.notespace
 
 import android.app.Application
 import androidx.paging.ExperimentalPagingApi
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.koin.android.BuildConfig
 import timber.log.Timber
 
+@HiltAndroidApp
 open class MyApplication : Application() {
 
     @ExperimentalCoroutinesApi

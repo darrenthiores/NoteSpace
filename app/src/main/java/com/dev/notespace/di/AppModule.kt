@@ -1,7 +1,7 @@
 package com.dev.notespace.di
 
-import com.dev.core.domain.Interactor
-import com.dev.core.domain.UseCase
+import com.dev.core.domain.NoteSpaceInteractor
+import com.dev.core.domain.NoteSpaceUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -13,5 +13,5 @@ import dagger.hilt.android.scopes.ViewModelScoped
 abstract class AppModule {
     @Binds
     @ViewModelScoped
-    abstract fun provideUseCase(interactor: Interactor): UseCase
+    abstract fun provideUseCase(noteCaseInteractor: NoteSpaceInteractor): NoteSpaceUseCase
 }
