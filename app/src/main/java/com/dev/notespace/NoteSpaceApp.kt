@@ -15,6 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dev.notespace.navigation.NoteSpaceNavigation
 import com.dev.notespace.navigation.NoteSpaceRegis
+import com.dev.notespace.navigation.NoteSpaceScreen
+import com.dev.notespace.screen.LandingScreen
 import com.dev.notespace.screen.LoginScreen
 import com.dev.notespace.screen.MobileOtpScreen
 import com.dev.notespace.screen.RegisterScreen
@@ -73,9 +75,14 @@ private fun NoteSpaceNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NoteSpaceRegis.Login.name,
+        startDestination = NoteSpaceScreen.Landing.name,
         modifier = modifier
     ) {
+
+        composable(NoteSpaceScreen.Landing.name) {
+            LandingScreen(navigateToLogin =  { navController.navigate(NoteSpaceRegis.Login.name) })
+        }
+
         composable(NoteSpaceRegis.Login.name) {
             LoginScreen(
                 navigateToOtp = { number, verificationId ->
