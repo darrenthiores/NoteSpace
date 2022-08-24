@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dev.core.model.presenter.User
 import com.dev.notespace.component.CommonDialog
 import com.dev.notespace.component.OtpTextFields
 import com.dev.notespace.viewModel.OtpViewModel
@@ -30,6 +31,7 @@ fun MobileOtpScreen(
     viewModel: OtpViewModel = hiltViewModel(),
     number: String,
     verification_id: String,
+    user: User?,
     showSnackBar: (String) -> Unit,
     navigateToHome: () -> Unit
 ) {
@@ -118,7 +120,33 @@ fun MobileOtpScreen(
                 val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationId, otp)
                 viewModel.signInWithCredential(credential)
                     .addOnCompleteListener {
-                        navigateToHome()
+                        if(it.isSuccessful) {
+                            if(user==null) {
+                                navigateToHome()
+                            } else {
+                                viewModel.registerUser(user)
+                                    .addOnCompleteListener { register ->
+                                        if(register.isSuccessful) {
+                                            viewModel.updateNumber(number)
+                                                .addOnCompleteListener { update ->
+                                                    if(update.isSuccessful) {
+                                                        navigateToHome()
+                                                    }
+                                                }
+                                                .addOnFailureListener {
+                                                    setMessage("Failed Registering User! Please Try Again")
+                                                    showDialog(true)
+                                                    viewModel.logOut()
+                                                }
+                                        }
+                                    }
+                                    .addOnFailureListener {
+                                        setMessage("Failed Registering User! Please Try Again")
+                                        showDialog(true)
+                                        viewModel.logOut()
+                                    }
+                            }
+                        }
                     }
                     .addOnFailureListener {
                         setOtpError("OTP Code Incorrect, please check it!")

@@ -15,9 +15,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dev.core.model.presenter.User
 import com.dev.notespace.R
 import com.dev.notespace.component.*
 import com.dev.notespace.viewModel.LoginViewModel
+import com.dev.notespace.viewModel.RegisterViewModel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.AuthResult
@@ -28,8 +30,8 @@ import timber.log.Timber
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = hiltViewModel(),
-    navigateToOtp: (String, String) -> Unit,
+    viewModel: RegisterViewModel = hiltViewModel(),
+    navigateToOtp: (String, String, User) -> Unit,
 ) {
     val (identifier, setIdentifier) = remember {
         mutableStateOf("")
@@ -90,7 +92,7 @@ fun RegisterScreen(
         override fun onCodeSent(p0: String, p1: PhoneAuthProvider.ForceResendingToken) {
             super.onCodeSent(p0, p1)
             showLoading(false)
-            navigateToOtp(identifier, p0)
+            navigateToOtp(identifier, p0, User(name, identifier, education, major))
         }
     }
     val activity = LocalContext.current as Activity
@@ -126,6 +128,7 @@ fun RegisterScreen(
         showMajorError = showMajorError,
         majorErrorDescription = majorErrorDescription,
         setMajorError = setMajorError,
+        checkPhoneNumber = { viewModel.checkPhoneNumber(identifier) },
         showDialog = showDialog,
         setMessage = setMessage,
         showLoading = showLoading
@@ -178,6 +181,7 @@ private fun RegisterContent(
     showMajorError: (Boolean) -> Unit,
     majorErrorDescription: String,
     setMajorError: (String) -> Unit,
+    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
@@ -242,6 +246,7 @@ private fun RegisterContent(
                     major = major,
                     setMajorDescription = setMajorError,
                     showMajorError = showMajorError,
+                    checkPhoneNumber = checkPhoneNumber,
                     showDialog = showDialog,
                     setMessage = setMessage,
                     showLoading = showLoading
@@ -271,6 +276,7 @@ private fun onButtonRegisterClick(
     major: String,
     setMajorDescription: (String) -> Unit,
     showMajorError: (Boolean) -> Unit,
+    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
@@ -310,7 +316,13 @@ private fun onButtonRegisterClick(
         }
         identifier.startsWith("08") && identifier.length <= 13 && identifier.length >= 8 -> {
             showLoading(true)
-            registerWithNumber()
+            if(checkPhoneNumber()) {
+                registerWithNumber()
+            } else {
+                setIdentifierDescription("Mobile No is Not Registered Yet!")
+                showIdentifierError(true)
+                showLoading(false)
+            }
         }
     }
 }
