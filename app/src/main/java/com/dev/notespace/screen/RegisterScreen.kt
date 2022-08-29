@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.model.presenter.User
 import com.dev.notespace.R
 import com.dev.notespace.component.*
+import com.dev.notespace.holder.TextFieldHolder
 import com.dev.notespace.viewModel.LoginViewModel
 import com.dev.notespace.viewModel.RegisterViewModel
 import com.google.android.gms.tasks.Task
@@ -33,42 +34,6 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel(),
     navigateToOtp: (String, String, User) -> Unit,
 ) {
-    val (identifier, setIdentifier) = remember {
-        mutableStateOf("")
-    }
-    val (identifierError, showIdentifierError) = remember {
-        mutableStateOf(false)
-    }
-    val (identifierErrorDescription, setIdentifierError) = remember {
-        mutableStateOf("")
-    }
-    val (name, setName) = remember {
-        mutableStateOf("")
-    }
-    val (nameError, showNameError) = remember {
-        mutableStateOf(false)
-    }
-    val (nameErrorDescription, setNameError) = remember {
-        mutableStateOf("")
-    }
-    val (education, setEducation) = remember {
-        mutableStateOf("")
-    }
-    val (educationError, showEducationError) = remember {
-        mutableStateOf(false)
-    }
-    val (educationErrorDescription, setEducationError) = remember {
-        mutableStateOf("")
-    }
-    val (major, setMajor) = remember {
-        mutableStateOf("")
-    }
-    val (majorError, showMajorError) = remember {
-        mutableStateOf(false)
-    }
-    val (majorErrorDescription, setMajorError) = remember {
-        mutableStateOf("")
-    }
     val (loading, showLoading) = remember {
         mutableStateOf(false)
     }
@@ -92,7 +57,16 @@ fun RegisterScreen(
         override fun onCodeSent(p0: String, p1: PhoneAuthProvider.ForceResendingToken) {
             super.onCodeSent(p0, p1)
             showLoading(false)
-            navigateToOtp(identifier, p0, User(name, identifier, education, major))
+            navigateToOtp(
+                viewModel.identifierHolder.value,
+                p0,
+                User(
+                    viewModel.nameHolder.value,
+                    viewModel.identifierHolder.value,
+                    viewModel.educationHolder.value,
+                    viewModel.majorHolder.value
+                )
+            )
         }
     }
     val activity = LocalContext.current as Activity
@@ -101,34 +75,10 @@ fun RegisterScreen(
         modifier = modifier,
         sendVerificationCode = {
             viewModel.sendVerificationCode(
-                activity, "+62$identifier", callbacks
+                activity, callbacks
             )
         },
-        identifier = identifier,
-        setIdentifier = setIdentifier,
-        identifierError = identifierError,
-        showIdentifierError = showIdentifierError,
-        identifierErrorDescription = identifierErrorDescription,
-        setIdentifierError = setIdentifierError,
-        name = name,
-        setName = setName,
-        nameError = nameError,
-        showNameError = showNameError,
-        nameErrorDescription = nameErrorDescription,
-        setNameError = setNameError,
-        education = education,
-        setEducation = setEducation,
-        educationError = educationError,
-        showEducationError = showEducationError,
-        educationErrorDescription = educationErrorDescription,
-        setEducationError = setEducationError,
-        major = major,
-        setMajor = setMajor,
-        majorError = majorError,
-        showMajorError = showMajorError,
-        majorErrorDescription = majorErrorDescription,
-        setMajorError = setMajorError,
-        checkPhoneNumber = { viewModel.checkPhoneNumber(identifier) },
+        viewModel = viewModel,
         showDialog = showDialog,
         setMessage = setMessage,
         showLoading = showLoading
@@ -156,32 +106,8 @@ fun RegisterScreen(
 @Composable
 private fun RegisterContent(
     modifier: Modifier = Modifier,
+    viewModel: RegisterViewModel,
     sendVerificationCode: () -> Unit,
-    identifier: String,
-    setIdentifier: (String) -> Unit,
-    identifierError: Boolean,
-    showIdentifierError: (Boolean) -> Unit,
-    identifierErrorDescription: String,
-    setIdentifierError: (String) -> Unit,
-    name: String,
-    setName: (String) -> Unit,
-    nameError: Boolean,
-    showNameError: (Boolean) -> Unit,
-    nameErrorDescription: String,
-    setNameError: (String) -> Unit,
-    education: String,
-    setEducation: (String) -> Unit,
-    educationError: Boolean,
-    showEducationError: (Boolean) -> Unit,
-    educationErrorDescription: String,
-    setEducationError: (String) -> Unit,
-    major: String,
-    setMajor: (String) -> Unit,
-    majorError: Boolean,
-    showMajorError: (Boolean) -> Unit,
-    majorErrorDescription: String,
-    setMajorError: (String) -> Unit,
-    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
@@ -195,58 +121,34 @@ private fun RegisterContent(
         DataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Name",
-            currentText = name,
-            onTextChange = setName,
-            error = nameError,
-            errorDescription = nameErrorDescription,
-            showError = showNameError
+            textFieldHolder = viewModel.nameHolder
         )
         EducationDropDown(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp),
-            education = education,
-            onItemClicked = setEducation,
-            error = educationError,
-            errorDescription = educationErrorDescription,
-            showError = showEducationError
+            textFieldHolder = viewModel.educationHolder
         )
         DataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Major",
-            currentText = major,
-            onTextChange = setMajor,
-            error = majorError,
-            errorDescription = majorErrorDescription,
-            showError = showMajorError
+            textFieldHolder = viewModel.majorHolder
         )
         DigitDataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Mobile No",
-            currentText = identifier,
-            onTextChange = setIdentifier,
-            error = identifierError,
-            errorDescription = identifierErrorDescription,
-            showError = showIdentifierError
+            textFieldHolder = viewModel.identifierHolder
         )
         Button(
             onClick = {
                 onButtonRegisterClick(
                     registerWithNumber = sendVerificationCode,
-                    identifier = identifier,
-                    setIdentifierDescription = setIdentifierError,
-                    showIdentifierError = showIdentifierError,
-                    name = name,
-                    setNameDescription = setNameError,
-                    showNameError = showNameError,
-                    education = education,
-                    setEducationDescription = setEducationError,
-                    showEducationError = showEducationError,
-                    major = major,
-                    setMajorDescription = setMajorError,
-                    showMajorError = showMajorError,
-                    checkPhoneNumber = checkPhoneNumber,
+                    identifierHolder = viewModel.identifierHolder,
+                    nameHolder = viewModel.nameHolder,
+                    educationHolder = viewModel.educationHolder,
+                    majorHolder = viewModel.majorHolder,
+                    checkPhoneNumber = viewModel::checkPhoneNumber,
                     showDialog = showDialog,
                     setMessage = setMessage,
                     showLoading = showLoading
@@ -264,63 +166,59 @@ private fun RegisterContent(
 
 private fun onButtonRegisterClick(
     registerWithNumber: () -> Unit,
-    identifier: String,
-    setIdentifierDescription: (String) -> Unit,
-    showIdentifierError: (Boolean) -> Unit,
-    name: String,
-    setNameDescription: (String) -> Unit,
-    showNameError: (Boolean) -> Unit,
-    education: String,
-    setEducationDescription: (String) -> Unit,
-    showEducationError: (Boolean) -> Unit,
-    major: String,
-    setMajorDescription: (String) -> Unit,
-    showMajorError: (Boolean) -> Unit,
+    identifierHolder: TextFieldHolder,
+    nameHolder: TextFieldHolder,
+    educationHolder: TextFieldHolder,
+    majorHolder: TextFieldHolder,
     checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
 ) {
     when {
-        name.isEmpty() -> {
-            setNameDescription("Name Field Cannot Be Empty")
-            showNameError(true)
+        nameHolder.value.isEmpty() -> {
+            nameHolder.setErrorDes("Name Field Cannot Be Empty")
+            nameHolder.setTextFieldError(true)
         }
-        name.length <= 5 -> {
-            setNameDescription("Name Length Must Be Greater Than 5")
-            showNameError(true)
+        nameHolder.value.length <= 5 -> {
+            nameHolder.setErrorDes("Name Length Must Be Greater Than 5")
+            nameHolder.setTextFieldError(true)
         }
-        education.isEmpty() -> {
-            setEducationDescription("Please select your current education")
-            showEducationError(true)
+        educationHolder.value.isEmpty() -> {
+            educationHolder.setErrorDes("Please select your current education")
+            educationHolder.setTextFieldError(true)
         }
-        major.isEmpty() -> {
-            setMajorDescription("Please let us know your current major")
-            showMajorError(true)
+        majorHolder.value.isEmpty() -> {
+            majorHolder.setErrorDes("Please let us know your current major")
+            majorHolder.setTextFieldError(true)
         }
-        identifier.isEmpty() -> {
-            setIdentifierDescription("Identifier Field Cannot Be Empty")
-            showIdentifierError(true)
+        identifierHolder.value.isEmpty() -> {
+            identifierHolder.setErrorDes("Identifier Field Cannot Be Empty")
+            identifierHolder.setTextFieldError(true)
         }
-        !identifier.startsWith("08") -> {
-            setIdentifierDescription("Mobile no should start with 08")
-            showIdentifierError(true)
+        !identifierHolder.value.startsWith("08") -> {
+            identifierHolder.setErrorDes("Mobile no should start with 08")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length <= 8 -> {
-            setIdentifierDescription("Mobile No Length Must Be Greater Than 8")
-            showIdentifierError(true)
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length <= 8 -> {
+            identifierHolder.setErrorDes("Mobile No Length Must Be Greater Than 8")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length >= 13 -> {
-            setIdentifierDescription("Mobile No Length Must Be Less Than 13")
-            showIdentifierError(true)
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length >= 13 -> {
+            identifierHolder.setErrorDes("Mobile No Length Must Be Less Than 13")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length <= 13 && identifier.length >= 8 -> {
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length <= 13 &&
+        identifierHolder.value.length >= 8 -> {
             showLoading(true)
             if(checkPhoneNumber()) {
                 registerWithNumber()
             } else {
-                setIdentifierDescription("Mobile No is Not Registered Yet!")
-                showIdentifierError(true)
+                identifierHolder.setErrorDes("Mobile No is Already Registered!")
+                identifierHolder.setTextFieldError(true)
                 showLoading(false)
             }
         }

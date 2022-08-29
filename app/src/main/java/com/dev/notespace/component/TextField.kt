@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import com.dev.notespace.holder.TextFieldHolder
 
 @Composable
 fun DataInput(
@@ -65,6 +66,51 @@ fun DataInput(
     if(error) {
         Text(
             text = errorDescription,
+            color = MaterialTheme.colors.error,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            textAlign = TextAlign.Start
+        )
+    }
+}
+
+@Composable
+fun DataInput(
+    modifier: Modifier = Modifier,
+    label: String,
+    textFieldHolder: TextFieldHolder,
+    maxLength: Int = 20
+) {
+    OutlinedTextField(
+        value = textFieldHolder.value,
+        onValueChange = { text ->
+            if(text.length <= maxLength) {
+                textFieldHolder.setTextFieldValue(text)
+            }
+            textFieldHolder.setTextFieldError(false)
+        },
+        label = { Text(text = label) },
+        isError = textFieldHolder.error,
+        trailingIcon = {
+            if(textFieldHolder.error) {
+                Icon(
+                    imageVector = Icons.Filled.Error,
+                    contentDescription = textFieldHolder.errorDescription,
+                    tint = MaterialTheme.colors.error
+                )
+            }
+        },
+        singleLine = true,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 4.dp)
+    )
+    if(textFieldHolder.error) {
+        Text(
+            text = textFieldHolder.errorDescription,
             color = MaterialTheme.colors.error,
             style = MaterialTheme.typography.caption,
             modifier = Modifier
@@ -117,6 +163,54 @@ fun DigitDataInput(
     if(error) {
         Text(
             text = errorDescription,
+            color = MaterialTheme.colors.error,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            textAlign = TextAlign.Start
+        )
+    }
+}
+
+@Composable
+fun DigitDataInput(
+    modifier: Modifier = Modifier,
+    label: String,
+    textFieldHolder: TextFieldHolder,
+    maxLength: Int = 20
+) {
+    OutlinedTextField(
+        value = textFieldHolder.value,
+        onValueChange = { text ->
+            if(text.length <= maxLength) {
+                textFieldHolder.setTextFieldValue(text)
+            }
+            textFieldHolder.setTextFieldError(false)
+        },
+        label = { Text(text = label) },
+        isError = textFieldHolder.error,
+        trailingIcon = {
+            if(textFieldHolder.error) {
+                Icon(
+                    imageVector = Icons.Filled.Error,
+                    contentDescription = textFieldHolder.errorDescription,
+                    tint = MaterialTheme.colors.error
+                )
+            }
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 4.dp)
+    )
+    if(textFieldHolder.error) {
+        Text(
+            text = textFieldHolder.errorDescription,
             color = MaterialTheme.colors.error,
             style = MaterialTheme.typography.caption,
             modifier = Modifier

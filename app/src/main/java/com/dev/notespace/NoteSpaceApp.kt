@@ -42,22 +42,15 @@ fun NoteSpaceApp() {
     val scaffoldState = rememberScaffoldState()
 
     navController.addOnDestinationChangedListener{ _, destination, _ ->
-        // if you need to hide either top bar or bottom bar in some navigation screen
-        when(destination.route) {
+        showBottomBar = when(destination.route) {
             NoteSpaceNavigation.Home.name -> {
-                showBottomBar = true
-            }
-            NoteSpaceNavigation.Search.name -> {
-                showBottomBar = true
-            }
-            NoteSpaceNavigation.Notification.name -> {
-                showBottomBar = true
+                true
             }
             NoteSpaceNavigation.Profile.name -> {
-                showBottomBar = true
+                true
             }
             else -> {
-                showBottomBar = false
+                false
             }
         }
     }
