@@ -1,12 +1,16 @@
 package com.dev.core.domain
 
 import android.app.Activity
+import android.net.Uri
+import androidx.compose.ui.graphics.ImageBitmap
 import com.dev.core.data.Resource
 import com.dev.core.data.repository.INoteSpaceRepository
 import com.dev.core.model.domain.NoteDomain
 import com.dev.core.model.domain.UserDomain
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.storage.UploadTask
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -50,4 +54,22 @@ class NoteSpaceInteractor @Inject constructor(
 
     override fun getPopularNote(): Flow<Resource<List<NoteDomain>>> =
         repository.getPopularNote()
+
+    override fun getFirstHomeSearchedNote(searchText: String): Flow<Resource<List<NoteDomain>>> =
+        repository.getFirstHomeSearchedNote(searchText)
+
+    override fun getNextHomeSearchedNote(
+        searchText: String,
+        lastVisible: String
+    ): Flow<Resource<List<NoteDomain>>> =
+        repository.getNextHomeSearchedNote(searchText, lastVisible)
+
+    override fun insertPdfFile(user_id: String, note_id: String, file: Uri): UploadTask =
+        repository.insertPdfFile(user_id, note_id, file)
+
+    override suspend fun getPdfFile(user_id: String, note_id: String): List<ImageBitmap> =
+        repository.getPdfFile(user_id, note_id)
+
+    override suspend fun getPdfPreview(user_id: String, note_id: String): ImageBitmap? =
+        repository.getPdfPreview(user_id, note_id)
 }

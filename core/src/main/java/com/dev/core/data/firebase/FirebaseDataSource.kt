@@ -2,6 +2,7 @@ package com.dev.core.data.firebase
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import com.dev.core.BuildConfig
 import com.dev.core.data.remote.source.ApiResponse
 import com.dev.core.model.data.request.NoteRequest
@@ -16,6 +17,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -102,8 +105,72 @@ class FirebaseDataSource {
         }
     }
 
+    // home search
+    fun getFirstHomeSearchedNote(searchText: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
+        val listenerRegistration = noteCollection
+            .whereIn("name", listOf(searchText))
+            .whereIn("subject", listOf(searchText))
+            .limit(20)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(ApiResponse.Error(error.message.toString()))
+                    cancel(message = "Error fetching Notes", cause = error)
+                    return@addSnapshotListener
+                }
+
+                val notes = value?.documents?.mapNotNull {
+                    it.toObject(NoteResponse::class.java)
+                }
+
+                if(notes.isNullOrEmpty()) {
+                    trySend(ApiResponse.Error("Error Fetching Notes: null or empty"))
+                } else {
+                    trySend(ApiResponse.Success(notes))
+                }
+            }
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
+    fun getNextHomeSearchedNote(searchText: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
+        val listenerRegistration = noteCollection
+            .whereIn("name", listOf(searchText))
+            .whereIn("subject", listOf(searchText))
+            .startAfter(lastVisible)
+            .limit(20)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(ApiResponse.Error(error.message.toString()))
+                    cancel(message = "Error fetching Notes", cause = error)
+                    return@addSnapshotListener
+                }
+
+                val notes = value?.documents?.mapNotNull {
+                    it.toObject(NoteResponse::class.java)
+                }
+
+                if(notes.isNullOrEmpty()) {
+                    trySend(ApiResponse.Error("Error Fetching Notes: null or empty"))
+                } else {
+                    trySend(ApiResponse.Success(notes))
+                }
+            }
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
     /**Storage**/
     private val storage = FirebaseStorage.getInstance()
     private val storageReference = storage.reference
 
+    fun insertPdfFile(user_id: String, note_id: String, file: Uri): UploadTask =
+        storageReference
+            .child("notespace_note/${user_id}/${note_id}.pdf")
+            .putFile(file)
+
+    fun getPdfFile(user_id: String, note_id: String): StorageReference =
+        storageReference
+            .child("notespace_note/${user_id}/${note_id}.pdf")
 }

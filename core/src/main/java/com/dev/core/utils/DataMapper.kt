@@ -56,6 +56,19 @@ object DataMapper {
             )
         }
 
+    fun mapNotesDomainToPresenter(input: List<NoteDomain>): List<Note> =
+        input.map {
+            Note(
+                note_id = it.note_id,
+                name = it.name,
+                description = it.description,
+                subject = it.subject,
+                file = it.file,
+                star = it.star,
+                user_id = it.user_id
+            )
+        }
+
     fun mapNoteDomainToPresenter(input: NoteDomain): Note =
         Note(
             note_id = input.note_id,
