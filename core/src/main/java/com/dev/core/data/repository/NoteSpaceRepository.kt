@@ -1,15 +1,22 @@
 package com.dev.core.data.repository
 
 import android.app.Activity
+import com.dev.core.data.Resource
 import com.dev.core.data.dataStore.DataStore
 import com.dev.core.data.firebase.FirebaseDataSource
 import com.dev.core.data.local.LocalDataSource
+import com.dev.core.data.remote.source.ApiResponse
 import com.dev.core.data.remote.source.RemoteDataSource
 import com.dev.core.model.data.response.UserResponse
+import com.dev.core.model.domain.NoteDomain
 import com.dev.core.model.domain.UserDomain
 import com.dev.core.utils.DataMapper
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,7 +49,7 @@ class NoteSpaceRepository @Inject constructor(
         fbDataSource.signInWithCredential(credential)
 
     override fun setUser(user: UserDomain): Task<Void> =
-        fbDataSource.setUser(DataMapper.mapDomainToRequest(user))
+        fbDataSource.setUser(DataMapper.mapUserDomainToRequest(user))
 
     override suspend fun checkPhoneNumber(phoneNumber: String): Boolean {
         val result = fbDataSource.checkPhoneNumber(phoneNumber).await()
@@ -55,6 +62,25 @@ class NoteSpaceRepository @Inject constructor(
     override suspend fun getUserData(): UserDomain {
         val data = fbDataSource.getUserData().await().toObject(UserResponse::class.java)
         return DataMapper.mapUserResponseToDomain(data!!)
+    }
+
+    override fun getPopularNote(): Flow<Resource<List<NoteDomain>>> = flow {
+        emit(Resource.Loading())
+        when(
+            val apiResponse = fbDataSource.getPopularNote().first()
+        ) {
+            is ApiResponse.Error -> {
+                emit(Resource.Error(apiResponse.errorMessage))
+            }
+            is ApiResponse.Empty -> {
+                emit(Resource.Loading())
+                delay(3000)
+                emit(Resource.Success(emptyList()))
+            }
+            is ApiResponse.Success -> {
+                emit(Resource.Success(DataMapper.mapNotesResponseToDomain(apiResponse.data)))
+            }
+        }
     }
 
 }

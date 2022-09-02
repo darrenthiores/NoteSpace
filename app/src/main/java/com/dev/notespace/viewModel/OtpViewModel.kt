@@ -34,7 +34,7 @@ class OtpViewModel @Inject constructor(
     )
 
     fun registerUser(user: User) =
-        noteSpaceUseCase.setUser(DataMapper.mapPresenterToDomain(user))
+        noteSpaceUseCase.setUser(DataMapper.mapUserPresenterToDomain(user))
 
     fun updateNumber(phoneNumber: String) =
         noteSpaceUseCase.setPhoneNumber(phoneNumber)

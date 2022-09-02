@@ -1,10 +1,13 @@
 package com.dev.core.domain
 
 import android.app.Activity
+import com.dev.core.data.Resource
 import com.dev.core.data.repository.INoteSpaceRepository
+import com.dev.core.model.domain.NoteDomain
 import com.dev.core.model.domain.UserDomain
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,4 +47,7 @@ class NoteSpaceInteractor @Inject constructor(
 
     override suspend fun getUserData(): UserDomain =
         repository.getUserData()
+
+    override fun getPopularNote(): Flow<Resource<List<NoteDomain>>> =
+        repository.getPopularNote()
 }

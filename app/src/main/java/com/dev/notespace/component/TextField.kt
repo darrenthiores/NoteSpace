@@ -1,11 +1,15 @@
 package com.dev.notespace.component
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
@@ -18,12 +22,15 @@ import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.dev.notespace.holder.TextFieldHolder
 
@@ -410,4 +417,45 @@ fun OtpTextFields(
             textAlign = TextAlign.Start
         )
     }
+}
+
+@Composable
+fun SearchTextField(
+    modifier: Modifier = Modifier,
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
+) {
+    OutlinedTextField(
+        modifier = modifier,
+        value = searchText,
+        onValueChange = { newValue ->
+            onSearchTextChange(newValue)
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = "Search"
+            )
+        },
+        placeholder = {
+            Text(text = "Search Here...", style = MaterialTheme.typography.caption)
+        },
+        trailingIcon = trailingIcon,
+        shape = RoundedCornerShape(CornerSize(16.dp)),
+        textStyle = TextStyle(fontSize = 12.sp),
+        singleLine = true,
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = Color.Black,
+            backgroundColor = Color(0xFFD6D6D6),
+            cursorColor = Color.Black,
+            placeholderColor = Color.Gray,
+            focusedIndicatorColor = Color.Unspecified,
+            unfocusedIndicatorColor = Color.Unspecified
+        ),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions
+    )
 }
