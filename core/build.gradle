@@ -20,7 +20,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        buildConfigField("String", "BASE_URL", '"BASE URL HERE"') // if your app use Ktor
+        buildConfigField("String", "BASE_URL", '"BASEURLHERE"') // if your app use Ktor
         buildConfigField("String", "SQL_PASSWORD", '"ANYTHING"') // if your app use Room (for sqlite chiper)
         buildConfigField("String", "DATA_STORE_NAME", '"NOTE_SPACE_DS"')
 
