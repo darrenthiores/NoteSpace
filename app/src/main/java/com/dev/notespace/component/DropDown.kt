@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.dev.notespace.holder.TextFieldHolder
 
 @Composable
 fun EducationDropDown(
@@ -41,6 +42,40 @@ fun EducationDropDown(
     if(error) {
         Text(
             text = errorDescription,
+            color = MaterialTheme.colors.error,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            textAlign = TextAlign.Start
+        )
+    }
+}
+
+@Composable
+fun EducationDropDown(
+    modifier: Modifier = Modifier,
+    textFieldHolder: TextFieldHolder
+) {
+    var isExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    EducationDropDown(
+        modifier = modifier,
+        expanded = isExpanded,
+        education = textFieldHolder.value,
+        onDropDownClicked = {
+            isExpanded = true
+            textFieldHolder.setTextFieldError(false)
+        },
+        onDismiss = { isExpanded = false },
+        onItemClicked = textFieldHolder::setTextFieldValue
+    )
+
+    if(textFieldHolder.error) {
+        Text(
+            text = textFieldHolder.errorDescription,
             color = MaterialTheme.colors.error,
             style = MaterialTheme.typography.caption,
             modifier = Modifier

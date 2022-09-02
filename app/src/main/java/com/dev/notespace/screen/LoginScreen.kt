@@ -20,6 +20,7 @@ import com.dev.notespace.component.CommonDialog
 import com.dev.notespace.component.DataInput
 import com.dev.notespace.component.DigitDataInput
 import com.dev.notespace.component.PasswordInput
+import com.dev.notespace.holder.TextFieldHolder
 import com.dev.notespace.viewModel.LoginViewModel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
@@ -35,15 +36,6 @@ fun LoginScreen(
     navigateToOtp: (String, String) -> Unit,
     navigateToRegister: () -> Unit
 ) {
-    val (identifier, setIdentifier) = remember {
-        mutableStateOf("")
-    }
-    val (identifierError, showIdentifierError) = remember {
-        mutableStateOf(false)
-    }
-    val (identifierErrorDescription, setIdentifierError) = remember {
-        mutableStateOf("")
-    }
     val (loading, showLoading) = remember {
         mutableStateOf(false)
     }
@@ -67,7 +59,7 @@ fun LoginScreen(
         override fun onCodeSent(p0: String, p1: PhoneAuthProvider.ForceResendingToken) {
             super.onCodeSent(p0, p1)
             showLoading(false)
-            navigateToOtp(identifier, p0)
+            navigateToOtp(viewModel.identifierHolder.value, p0)
         }
     }
     val activity = LocalContext.current as Activity
@@ -75,18 +67,12 @@ fun LoginScreen(
     LoginContent(
         modifier = modifier,
         sendVerificationCode = {
-                               navigateToOtp("08", "123456")
-//            viewModel.sendVerificationCode(
-//                activity, identifier, callbacks
-//            )
+            viewModel.sendVerificationCode(
+                activity, callbacks
+            )
         },
         navigateToRegister = navigateToRegister,
-        identifier = identifier,
-        setIdentifier = setIdentifier,
-        identifierError = identifierError,
-        showIdentifierError = showIdentifierError,
-        identifierErrorDescription = identifierErrorDescription,
-        setIdentifierError = setIdentifierError,
+        viewModel = viewModel,
         showDialog = showDialog,
         setMessage = setMessage,
         showLoading = showLoading
@@ -116,12 +102,7 @@ private fun LoginContent(
     modifier: Modifier = Modifier,
     sendVerificationCode: () -> Unit,
     navigateToRegister: () -> Unit,
-    identifier: String,
-    setIdentifier: (String) -> Unit,
-    identifierError: Boolean,
-    showIdentifierError: (Boolean) -> Unit,
-    identifierErrorDescription: String,
-    setIdentifierError: (String) -> Unit,
+    viewModel: LoginViewModel,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
@@ -149,20 +130,15 @@ private fun LoginContent(
         DigitDataInput(
             modifier = Modifier.padding(top = 128.dp),
             label = "Mobile No",
-            currentText = identifier,
-            onTextChange = setIdentifier,
-            error = identifierError,
-            errorDescription = identifierErrorDescription,
-            showError = showIdentifierError,
+            textFieldHolder = viewModel.identifierHolder,
             maxLength = 13
         )
         Button(
             onClick = {
                 onButtonLoginClick(
                     loginWithNumber = sendVerificationCode,
-                    identifier = identifier,
-                    setIdentifierDescription = setIdentifierError,
-                    showIdentifierError = showIdentifierError,
+                    identifierHolder = viewModel.identifierHolder,
+                    checkPhoneNumber = viewModel::checkPhoneNumber,
                     showDialog = showDialog,
                     setMessage = setMessage,
                     showLoading = showLoading
@@ -188,33 +164,42 @@ private fun LoginContent(
 
 private fun onButtonLoginClick(
     loginWithNumber: () -> Unit,
-    identifier: String,
-    setIdentifierDescription: (String) -> Unit,
-    showIdentifierError: (Boolean) -> Unit,
+    identifierHolder: TextFieldHolder,
+    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
 ) {
     when {
-        identifier.isEmpty() -> {
-            setIdentifierDescription("This Field Cannot Be Empty")
-            showIdentifierError(true)
+        identifierHolder.value.isEmpty() -> {
+            identifierHolder.setErrorDes("This Field Cannot Be Empty")
+            identifierHolder.setTextFieldError(true)
         }
-        !identifier.startsWith("08") -> {
-            setIdentifierDescription("Mobile no should start with 08")
-            showIdentifierError(true)
+        !identifierHolder.value.startsWith("08") -> {
+            identifierHolder.setErrorDes("Mobile no should start with 08")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length <= 8 -> {
-            setIdentifierDescription("Mobile No Length Must Be Greater Than 8")
-            showIdentifierError(true)
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length <= 8 -> {
+            identifierHolder.setErrorDes("Mobile No Length Must Be Greater Than 8")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length >= 13 -> {
-            setIdentifierDescription("Mobile No Length Must Be Less Than 13")
-            showIdentifierError(true)
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length >= 13 -> {
+            identifierHolder.setErrorDes("Mobile No Length Must Be Less Than 13")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length <= 13 && identifier.length >= 8 -> {
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length <= 13 &&
+        identifierHolder.value.length >= 8 -> {
             showLoading(true)
-            loginWithNumber()
+            if(checkPhoneNumber()) {
+                identifierHolder.setErrorDes("Mobile No is Not Registered Yet!")
+                identifierHolder.setTextFieldError(true)
+                showLoading(false)
+            } else {
+                loginWithNumber()
+            }
         }
     }
 }

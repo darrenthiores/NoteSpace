@@ -1,9 +1,13 @@
 package com.dev.core.domain
 
 import android.app.Activity
+import com.dev.core.data.Resource
 import com.dev.core.data.repository.INoteSpaceRepository
+import com.dev.core.model.domain.NoteDomain
+import com.dev.core.model.domain.UserDomain
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,6 +17,9 @@ class NoteSpaceInteractor @Inject constructor(
 ): NoteSpaceUseCase {
     override fun getUser(): FirebaseUser? =
         repository.getUser()
+
+    override fun logOut() =
+        repository.logOut()
 
     override fun linkEmail(credential: AuthCredential): Task<AuthResult>? =
         repository.linkEmail(credential)
@@ -29,12 +36,18 @@ class NoteSpaceInteractor @Inject constructor(
     override fun signInWithCredential(credential: PhoneAuthCredential): Task<AuthResult> =
         repository.signInWithCredential(credential)
 
-    override fun sendEmailLink(email: String): Task<Void> =
-        repository.sendEmailLink(email)
+    override fun setUser(user: UserDomain): Task<Void> =
+        repository.setUser(user)
 
-    override fun isSignInLink(emailLink: String): Boolean =
-        repository.isSignInLink(emailLink)
+    override suspend fun checkPhoneNumber(phoneNumber: String): Boolean =
+        repository.checkPhoneNumber(phoneNumber)
 
-    override fun signInWithEmail(email: String, emailLink: String): Task<AuthResult> =
-        repository.signInWithEmail(email, emailLink)
+    override fun setPhoneNumber(phoneNumber: String): Task<Void> =
+        repository.setPhoneNumber(phoneNumber)
+
+    override suspend fun getUserData(): UserDomain =
+        repository.getUserData()
+
+    override fun getPopularNote(): Flow<Resource<List<NoteDomain>>> =
+        repository.getPopularNote()
 }

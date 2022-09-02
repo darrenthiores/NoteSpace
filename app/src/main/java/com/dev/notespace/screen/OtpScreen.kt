@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dev.core.model.presenter.User
 import com.dev.notespace.component.CommonDialog
 import com.dev.notespace.component.OtpTextFields
 import com.dev.notespace.viewModel.OtpViewModel
@@ -30,14 +31,12 @@ fun MobileOtpScreen(
     viewModel: OtpViewModel = hiltViewModel(),
     number: String,
     verification_id: String,
+    user: User?,
     showSnackBar: (String) -> Unit,
     navigateToHome: () -> Unit
 ) {
     var verificationId by remember {
         mutableStateOf(verification_id)
-    }
-    var otp by remember {
-        mutableStateOf("")
     }
     var timerCount by rememberSaveable {
         mutableStateOf<Long>(10000)
@@ -52,12 +51,6 @@ fun MobileOtpScreen(
         mutableStateOf(false)
     }
     val (message, setMessage) = remember {
-        mutableStateOf("")
-    }
-    val (otpError, showOtpError) = remember {
-        mutableStateOf(false)
-    }
-    val (otpErrorDescription, setOtpError) = remember {
         mutableStateOf("")
     }
 
@@ -101,28 +94,51 @@ fun MobileOtpScreen(
 
     MobileOtpContent(
         modifier = modifier,
-        setOtp = { otp = it },
+        viewModel = viewModel,
         timer = cdTimer,
         onResent = {
             showLoading(true)
-            viewModel.sendVerificationCode(activity, number, callbacks)
+            viewModel.sendVerificationCode(activity, "+62${number.drop(1)}", callbacks)
         },
-        otpError = otpError,
-        showOtpError = showOtpError,
-        otpErrorDescription = otpErrorDescription,
         verifyOtp = {
-            if(otp.length < 6) {
-                setOtpError("Please Fill the OTP Code Correctly!")
-                showOtpError(true)
+            if(viewModel.otp.value.length < 6) {
+                viewModel.otp.setErrorDes("Please Fill the OTP Code Correctly!")
+                viewModel.otp.setTextFieldError(true)
             } else {
-                val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationId, otp)
+                val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationId, viewModel.otp.value)
                 viewModel.signInWithCredential(credential)
                     .addOnCompleteListener {
-                        navigateToHome()
+                        if(it.isSuccessful) {
+                            if(user==null) {
+                                navigateToHome()
+                            } else {
+                                viewModel.registerUser(user)
+                                    .addOnCompleteListener { register ->
+                                        if(register.isSuccessful) {
+                                            viewModel.updateNumber(number)
+                                                .addOnCompleteListener { update ->
+                                                    if(update.isSuccessful) {
+                                                        navigateToHome()
+                                                    }
+                                                }
+                                                .addOnFailureListener {
+                                                    setMessage("Failed Registering User! Please Try Again")
+                                                    showDialog(true)
+                                                    viewModel.logOut()
+                                                }
+                                        }
+                                    }
+                                    .addOnFailureListener {
+                                        setMessage("Failed Registering User! Please Try Again")
+                                        showDialog(true)
+                                        viewModel.logOut()
+                                    }
+                            }
+                        }
                     }
                     .addOnFailureListener {
-                        setOtpError("OTP Code Incorrect, please check it!")
-                        showOtpError(true)
+                        viewModel.otp.setErrorDes("OTP Code Incorrect, please check it!")
+                        viewModel.otp.setTextFieldError(true)
                     }
             }
         }
@@ -150,12 +166,9 @@ fun MobileOtpScreen(
 @Composable
 private fun MobileOtpContent(
     modifier: Modifier = Modifier,
-    setOtp: (String) -> Unit,
+    viewModel: OtpViewModel,
     timer: Long,
     onResent: () -> Unit,
-    otpError: Boolean,
-    showOtpError: (Boolean) -> Unit,
-    otpErrorDescription: String,
     verifyOtp: () -> Unit
 ) {
     Column(
@@ -168,10 +181,10 @@ private fun MobileOtpContent(
             modifier = Modifier
                 .padding(top = 128.dp)
                 .fillMaxWidth(),
-            whenFull = { setOtp(it) },
-            error = otpError,
-            errorDescription = otpErrorDescription,
-            showError = showOtpError
+            whenFull = { viewModel.otp.setTextFieldValue(it) },
+            error = viewModel.otp.error,
+            errorDescription = viewModel.otp.errorDescription,
+            showError = viewModel.otp::setTextFieldError
         )
 
         if(timer > 0) {
