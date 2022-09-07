@@ -27,7 +27,7 @@ fun EducationDropDown(
         mutableStateOf(false)
     }
 
-    EducationDropDown(
+    BaseDropDown(
         modifier = modifier,
         expanded = isExpanded,
         education = education,
@@ -36,7 +36,9 @@ fun EducationDropDown(
             showError(false)
         },
         onDismiss = { isExpanded = false },
-        onItemClicked = onItemClicked
+        onItemClicked = onItemClicked,
+        ifEmptyText = "Education",
+        item = educationList()
     )
 
     if(error) {
@@ -61,7 +63,7 @@ fun EducationDropDown(
         mutableStateOf(false)
     }
 
-    EducationDropDown(
+    BaseDropDown(
         modifier = modifier,
         expanded = isExpanded,
         education = textFieldHolder.value,
@@ -70,7 +72,9 @@ fun EducationDropDown(
             textFieldHolder.setTextFieldError(false)
         },
         onDismiss = { isExpanded = false },
-        onItemClicked = textFieldHolder::setTextFieldValue
+        onItemClicked = textFieldHolder::setTextFieldValue,
+        ifEmptyText = "Education",
+        item = educationList()
     )
 
     if(textFieldHolder.error) {
@@ -87,22 +91,60 @@ fun EducationDropDown(
 }
 
 @Composable
-private fun EducationDropDown(
+fun SubjectDropDown(
+    modifier: Modifier = Modifier,
+    textFieldHolder: TextFieldHolder
+) {
+    var isExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    BaseDropDown(
+        modifier = modifier,
+        expanded = isExpanded,
+        education = textFieldHolder.value,
+        onDropDownClicked = {
+            isExpanded = true
+            textFieldHolder.setTextFieldError(false)
+        },
+        onDismiss = { isExpanded = false },
+        onItemClicked = textFieldHolder::setTextFieldValue,
+        ifEmptyText = "Subject",
+        item = subject()
+    )
+
+    if (textFieldHolder.error) {
+        Text(
+            text = textFieldHolder.errorDescription,
+            color = MaterialTheme.colors.error,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            textAlign = TextAlign.Start
+        )
+    }
+}
+
+@Composable
+private fun BaseDropDown(
     modifier: Modifier = Modifier,
     expanded: Boolean,
     education: String,
     onDropDownClicked: () -> Unit,
     onDismiss: () -> Unit,
-    onItemClicked: (String) -> Unit
+    onItemClicked: (String) -> Unit,
+    ifEmptyText: String,
+    item: List<String>
 ) {
     Box(
         modifier = modifier
     ) {
         OutlinedButton(onClick = onDropDownClicked) {
-            Text(text = education.ifEmpty { "Pendidikan" })
+            Text(text = education.ifEmpty { ifEmptyText })
             Icon(
                 imageVector = if(expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                contentDescription = "Choose Education",
+                contentDescription = "Choose $ifEmptyText",
                 modifier = Modifier.padding(all = 8.dp)
             )
         }
@@ -113,7 +155,7 @@ private fun EducationDropDown(
                 .width(156.dp)
                 .padding(all = 4.dp)
         ) {
-            educationList().forEach {
+            item.forEach {
                 DropdownMenuItem(onClick = {
                     onDismiss()
                     onItemClicked(it)
@@ -133,4 +175,17 @@ private fun educationList(): List<String> =
     listOf(
         "SMA",
         "Kuliah"
+    )
+
+private fun subject(): List<String> =
+    listOf(
+        "Math",
+        "Biology",
+        "Physics",
+        "Chems",
+        "English",
+        "Bahasa",
+        "Geo",
+        "History",
+        "Other"
     )

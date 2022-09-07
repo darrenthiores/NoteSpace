@@ -1,9 +1,6 @@
 package com.dev.notespace.screen
 
 import android.app.Activity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
@@ -12,18 +9,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.dev.core.model.presenter.User
-import com.dev.notespace.R
+import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.*
 import com.dev.notespace.holder.TextFieldHolder
-import com.dev.notespace.viewModel.LoginViewModel
 import com.dev.notespace.viewModel.RegisterViewModel
-import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import timber.log.Timber
@@ -64,7 +56,8 @@ fun RegisterScreen(
                     viewModel.nameHolder.value,
                     viewModel.identifierHolder.value,
                     viewModel.educationHolder.value,
-                    viewModel.majorHolder.value
+                    viewModel.majorHolder.value,
+                    emptyList()
                 )
             )
         }

@@ -1,4 +1,4 @@
-package com.dev.core.model.data.request
+package com.dev.core.domain.model.data.request
 
 import com.google.firebase.firestore.PropertyName
 
@@ -10,5 +10,7 @@ data class UserRequest(
     @PropertyName("education")
     val education: String,
     @PropertyName("major")
-    val major: String
+    val major: String,
+    @PropertyName("interests")
+    val interests: List<String>
 )

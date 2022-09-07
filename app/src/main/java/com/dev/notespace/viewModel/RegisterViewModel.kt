@@ -2,7 +2,7 @@ package com.dev.notespace.viewModel
 
 import android.app.Activity
 import androidx.lifecycle.ViewModel
-import com.dev.core.domain.NoteSpaceUseCase
+import com.dev.core.domain.useCase.NoteSpaceUseCase
 import com.dev.notespace.holder.TextFieldHolder
 import com.google.firebase.auth.PhoneAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel

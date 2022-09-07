@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.dev.core.model.presenter.User
+import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.CommonDialog
 import com.dev.notespace.component.OtpTextFields
 import com.dev.notespace.viewModel.OtpViewModel

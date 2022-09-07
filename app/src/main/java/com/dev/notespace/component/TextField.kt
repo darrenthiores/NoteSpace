@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
+import com.dev.notespace.holder.SearchTextFieldHolder
 import com.dev.notespace.holder.TextFieldHolder
 
 @Composable
@@ -422,17 +423,16 @@ fun OtpTextFields(
 @Composable
 fun SearchTextField(
     modifier: Modifier = Modifier,
-    searchText: String,
-    onSearchTextChange: (String) -> Unit,
+    searchTextHolder: SearchTextFieldHolder,
     trailingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     OutlinedTextField(
         modifier = modifier,
-        value = searchText,
+        value = searchTextHolder.searchText,
         onValueChange = { newValue ->
-            onSearchTextChange(newValue)
+            searchTextHolder.setSearchTextValue(newValue)
         },
         leadingIcon = {
             Icon(

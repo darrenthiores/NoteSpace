@@ -1,20 +1,18 @@
-package com.dev.core.model.data.response
+package com.dev.core.domain.model.data.response
 
 import com.google.firebase.firestore.PropertyName
 
 data class NoteResponse(
     @PropertyName("note_id")
-    val note_id: String,
+    val note_id: String = "",
     @PropertyName("name")
-    val name: String,
+    val name: String = "",
     @PropertyName("description")
-    val description: String,
+    val description: String = "",
     @PropertyName("subject")
-    val subject: String,
-    @PropertyName("file")
-    val file: String,
+    val subject: String = "",
     @PropertyName("star")
-    val star: Int,
+    val star: Int = 0,
     @PropertyName("user_id")
-    val user_id: String
+    val user_id: String = ""
 )

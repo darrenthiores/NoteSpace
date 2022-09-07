@@ -1,13 +1,10 @@
-package com.dev.core.model.domain
-
-import com.google.firebase.firestore.PropertyName
+package com.dev.core.domain.model.domain
 
 data class NoteDomain(
     val note_id: String,
     val name: String,
     val description: String,
     val subject: String,
-    val file: String,
     val star: Int,
     val user_id: String
 )

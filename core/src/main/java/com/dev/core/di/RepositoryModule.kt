@@ -1,7 +1,7 @@
 package com.dev.core.di
 
-import com.dev.core.data.repository.INoteSpaceRepository
-import com.dev.core.data.repository.NoteSpaceRepository
+import com.dev.core.domain.repository.INoteSpaceRepository
+import com.dev.core.data.NoteSpaceRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

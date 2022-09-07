@@ -1,4 +1,4 @@
-package com.dev.core.model.data.request
+package com.dev.core.domain.model.data.request
 
 import com.google.firebase.firestore.PropertyName
 
@@ -11,8 +11,8 @@ data class NoteRequest(
     val description: String,
     @PropertyName("subject")
     val subject: String,
-    @PropertyName("file")
-    val file: String,
     @PropertyName("user_id")
-    val user_id: String
+    val user_id: String,
+    @PropertyName("star")
+    val star: Int = 0
 )
