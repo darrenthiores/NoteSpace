@@ -101,7 +101,7 @@ fun RegisterScreen(
         modifier = modifier,
         sendVerificationCode = {
             viewModel.sendVerificationCode(
-                activity, "+62$identifier", callbacks
+                activity, "+62${identifier.drop(1)}", callbacks
             )
         },
         identifier = identifier,
