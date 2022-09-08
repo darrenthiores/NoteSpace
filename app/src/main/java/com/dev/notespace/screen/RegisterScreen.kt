@@ -1,28 +1,20 @@
 package com.dev.notespace.screen
 
 import android.app.Activity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.dev.core.model.presenter.User
-import com.dev.notespace.R
+import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.*
-import com.dev.notespace.viewModel.LoginViewModel
+import com.dev.notespace.holder.ListFieldHolder
+import com.dev.notespace.holder.TextFieldHolder
 import com.dev.notespace.viewModel.RegisterViewModel
-import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import timber.log.Timber
@@ -32,43 +24,9 @@ fun RegisterScreen(
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = hiltViewModel(),
     navigateToOtp: (String, String, User) -> Unit,
+    onBackClicked: () -> Unit,
+    showSnackBar: (String) -> Unit
 ) {
-    val (identifier, setIdentifier) = remember {
-        mutableStateOf("")
-    }
-    val (identifierError, showIdentifierError) = remember {
-        mutableStateOf(false)
-    }
-    val (identifierErrorDescription, setIdentifierError) = remember {
-        mutableStateOf("")
-    }
-    val (name, setName) = remember {
-        mutableStateOf("")
-    }
-    val (nameError, showNameError) = remember {
-        mutableStateOf(false)
-    }
-    val (nameErrorDescription, setNameError) = remember {
-        mutableStateOf("")
-    }
-    val (education, setEducation) = remember {
-        mutableStateOf("")
-    }
-    val (educationError, showEducationError) = remember {
-        mutableStateOf(false)
-    }
-    val (educationErrorDescription, setEducationError) = remember {
-        mutableStateOf("")
-    }
-    val (major, setMajor) = remember {
-        mutableStateOf("")
-    }
-    val (majorError, showMajorError) = remember {
-        mutableStateOf(false)
-    }
-    val (majorErrorDescription, setMajorError) = remember {
-        mutableStateOf("")
-    }
     val (loading, showLoading) = remember {
         mutableStateOf(false)
     }
@@ -92,47 +50,46 @@ fun RegisterScreen(
         override fun onCodeSent(p0: String, p1: PhoneAuthProvider.ForceResendingToken) {
             super.onCodeSent(p0, p1)
             showLoading(false)
-            navigateToOtp(identifier, p0, User(name, identifier, education, major))
+            navigateToOtp(
+                viewModel.identifierHolder.value,
+                p0,
+                User(
+                    viewModel.nameHolder.value,
+                    viewModel.identifierHolder.value,
+                    viewModel.educationHolder.value,
+                    viewModel.majorHolder.value,
+                    viewModel.interestsHolder.value.subList(0, viewModel.interestsHolder.value.size).toList()
+                )
+            )
         }
     }
     val activity = LocalContext.current as Activity
+    val scaffoldState = rememberScaffoldState()
 
-    RegisterContent(
-        modifier = modifier,
-        sendVerificationCode = {
-            viewModel.sendVerificationCode(
-                activity, "+62${identifier.drop(1)}", callbacks
+    Scaffold(
+        topBar = {
+            MidTitleTopBar(
+                title = "REGISTER",
+                onBackClicked = onBackClicked
             )
         },
-        identifier = identifier,
-        setIdentifier = setIdentifier,
-        identifierError = identifierError,
-        showIdentifierError = showIdentifierError,
-        identifierErrorDescription = identifierErrorDescription,
-        setIdentifierError = setIdentifierError,
-        name = name,
-        setName = setName,
-        nameError = nameError,
-        showNameError = showNameError,
-        nameErrorDescription = nameErrorDescription,
-        setNameError = setNameError,
-        education = education,
-        setEducation = setEducation,
-        educationError = educationError,
-        showEducationError = showEducationError,
-        educationErrorDescription = educationErrorDescription,
-        setEducationError = setEducationError,
-        major = major,
-        setMajor = setMajor,
-        majorError = majorError,
-        showMajorError = showMajorError,
-        majorErrorDescription = majorErrorDescription,
-        setMajorError = setMajorError,
-        checkPhoneNumber = { viewModel.checkPhoneNumber(identifier) },
-        showDialog = showDialog,
-        setMessage = setMessage,
-        showLoading = showLoading
-    )
+        scaffoldState = scaffoldState
+    ) {
+        RegisterContent(
+            modifier = modifier
+                .padding(it),
+            sendVerificationCode = {
+                viewModel.sendVerificationCode(
+                    activity, callbacks
+                )
+            },
+            viewModel = viewModel,
+            showDialog = showDialog,
+            setMessage = setMessage,
+            showLoading = showLoading,
+            showSnackBar = showSnackBar
+        )
+    }
 
     if(loading) {
         Box(
@@ -156,35 +113,12 @@ fun RegisterScreen(
 @Composable
 private fun RegisterContent(
     modifier: Modifier = Modifier,
+    viewModel: RegisterViewModel,
     sendVerificationCode: () -> Unit,
-    identifier: String,
-    setIdentifier: (String) -> Unit,
-    identifierError: Boolean,
-    showIdentifierError: (Boolean) -> Unit,
-    identifierErrorDescription: String,
-    setIdentifierError: (String) -> Unit,
-    name: String,
-    setName: (String) -> Unit,
-    nameError: Boolean,
-    showNameError: (Boolean) -> Unit,
-    nameErrorDescription: String,
-    setNameError: (String) -> Unit,
-    education: String,
-    setEducation: (String) -> Unit,
-    educationError: Boolean,
-    showEducationError: (Boolean) -> Unit,
-    educationErrorDescription: String,
-    setEducationError: (String) -> Unit,
-    major: String,
-    setMajor: (String) -> Unit,
-    majorError: Boolean,
-    showMajorError: (Boolean) -> Unit,
-    majorErrorDescription: String,
-    setMajorError: (String) -> Unit,
-    checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
-    showLoading: (Boolean) -> Unit
+    showLoading: (Boolean) -> Unit,
+    showSnackBar: (String) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -195,58 +129,43 @@ private fun RegisterContent(
         DataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Name",
-            currentText = name,
-            onTextChange = setName,
-            error = nameError,
-            errorDescription = nameErrorDescription,
-            showError = showNameError
+            textFieldHolder = viewModel.nameHolder
+        )
+        InterestDropDown(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp),
+            listFieldHolder = viewModel.interestsHolder,
+            showSnackBar = showSnackBar
         )
         EducationDropDown(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp),
-            education = education,
-            onItemClicked = setEducation,
-            error = educationError,
-            errorDescription = educationErrorDescription,
-            showError = showEducationError
+            textFieldHolder = viewModel.educationHolder
         )
         DataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Major",
-            currentText = major,
-            onTextChange = setMajor,
-            error = majorError,
-            errorDescription = majorErrorDescription,
-            showError = showMajorError
+            textFieldHolder = viewModel.majorHolder
         )
         DigitDataInput(
             modifier = Modifier.padding(top = 16.dp),
             label = "Mobile No",
-            currentText = identifier,
-            onTextChange = setIdentifier,
-            error = identifierError,
-            errorDescription = identifierErrorDescription,
-            showError = showIdentifierError
+            textFieldHolder = viewModel.identifierHolder
         )
         Button(
             onClick = {
                 onButtonRegisterClick(
                     registerWithNumber = sendVerificationCode,
-                    identifier = identifier,
-                    setIdentifierDescription = setIdentifierError,
-                    showIdentifierError = showIdentifierError,
-                    name = name,
-                    setNameDescription = setNameError,
-                    showNameError = showNameError,
-                    education = education,
-                    setEducationDescription = setEducationError,
-                    showEducationError = showEducationError,
-                    major = major,
-                    setMajorDescription = setMajorError,
-                    showMajorError = showMajorError,
-                    checkPhoneNumber = checkPhoneNumber,
+                    identifierHolder = viewModel.identifierHolder,
+                    nameHolder = viewModel.nameHolder,
+                    educationHolder = viewModel.educationHolder,
+                    majorHolder = viewModel.majorHolder,
+                    interestHolder = viewModel.interestsHolder,
+                    checkPhoneNumber = viewModel::checkPhoneNumber,
                     showDialog = showDialog,
                     setMessage = setMessage,
                     showLoading = showLoading
@@ -264,63 +183,72 @@ private fun RegisterContent(
 
 private fun onButtonRegisterClick(
     registerWithNumber: () -> Unit,
-    identifier: String,
-    setIdentifierDescription: (String) -> Unit,
-    showIdentifierError: (Boolean) -> Unit,
-    name: String,
-    setNameDescription: (String) -> Unit,
-    showNameError: (Boolean) -> Unit,
-    education: String,
-    setEducationDescription: (String) -> Unit,
-    showEducationError: (Boolean) -> Unit,
-    major: String,
-    setMajorDescription: (String) -> Unit,
-    showMajorError: (Boolean) -> Unit,
+    identifierHolder: TextFieldHolder,
+    nameHolder: TextFieldHolder,
+    educationHolder: TextFieldHolder,
+    majorHolder: TextFieldHolder,
+    interestHolder: ListFieldHolder,
     checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
     showLoading: (Boolean) -> Unit
 ) {
     when {
-        name.isEmpty() -> {
-            setNameDescription("Name Field Cannot Be Empty")
-            showNameError(true)
+        nameHolder.value.isEmpty() -> {
+            nameHolder.setErrorDes("Name Field Cannot Be Empty")
+            nameHolder.setTextFieldError(true)
         }
-        name.length <= 5 -> {
-            setNameDescription("Name Length Must Be Greater Than 5")
-            showNameError(true)
+        nameHolder.value.length <= 5 -> {
+            nameHolder.setErrorDes("Name Length Must Be Greater Than 5")
+            nameHolder.setTextFieldError(true)
         }
-        education.isEmpty() -> {
-            setEducationDescription("Please select your current education")
-            showEducationError(true)
+        interestHolder.value.isEmpty() -> {
+            interestHolder.setErrorDes("You Must Choose 3-5 Interests")
+            interestHolder.setTextFieldError(true)
         }
-        major.isEmpty() -> {
-            setMajorDescription("Please let us know your current major")
-            showMajorError(true)
+        interestHolder.value.size < 3 -> {
+            interestHolder.setErrorDes("You Must Choose At Least 3 Interests")
+            interestHolder.setTextFieldError(true)
         }
-        identifier.isEmpty() -> {
-            setIdentifierDescription("Identifier Field Cannot Be Empty")
-            showIdentifierError(true)
+        interestHolder.value.size > 5 -> {
+            interestHolder.setErrorDes("You Can Only Choose Up To 5 Interests")
+            interestHolder.setTextFieldError(true)
         }
-        !identifier.startsWith("08") -> {
-            setIdentifierDescription("Mobile no should start with 08")
-            showIdentifierError(true)
+        educationHolder.value.isEmpty() -> {
+            educationHolder.setErrorDes("Please select your current education")
+            educationHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length <= 8 -> {
-            setIdentifierDescription("Mobile No Length Must Be Greater Than 8")
-            showIdentifierError(true)
+        majorHolder.value.isEmpty() -> {
+            majorHolder.setErrorDes("Please let us know your current major")
+            majorHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length >= 13 -> {
-            setIdentifierDescription("Mobile No Length Must Be Less Than 13")
-            showIdentifierError(true)
+        identifierHolder.value.isEmpty() -> {
+            identifierHolder.setErrorDes("Identifier Field Cannot Be Empty")
+            identifierHolder.setTextFieldError(true)
         }
-        identifier.startsWith("08") && identifier.length <= 13 && identifier.length >= 8 -> {
+        !identifierHolder.value.startsWith("08") -> {
+            identifierHolder.setErrorDes("Mobile no should start with 08")
+            identifierHolder.setTextFieldError(true)
+        }
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length <= 8 -> {
+            identifierHolder.setErrorDes("Mobile No Length Must Be Greater Than 8")
+            identifierHolder.setTextFieldError(true)
+        }
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length >= 13 -> {
+            identifierHolder.setErrorDes("Mobile No Length Must Be Less Than 13")
+            identifierHolder.setTextFieldError(true)
+        }
+        identifierHolder.value.startsWith("08") &&
+        identifierHolder.value.length <= 13 &&
+        identifierHolder.value.length >= 8 -> {
             showLoading(true)
             if(checkPhoneNumber()) {
                 registerWithNumber()
             } else {
-                setIdentifierDescription("Mobile No is Not Registered Yet!")
-                showIdentifierError(true)
+                identifierHolder.setErrorDes("Mobile No is Already Registered!")
+                identifierHolder.setTextFieldError(true)
                 showLoading(false)
             }
         }

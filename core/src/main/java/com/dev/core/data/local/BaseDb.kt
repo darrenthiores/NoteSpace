@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.dev.core.data.local.dao.paging.BaseDao
 import com.dev.core.data.local.dao.paging.KeyDao
-import com.dev.core.model.data.entity.BaseEntity
+import com.dev.core.domain.model.data.entity.BaseEntity
 
 @Database(
     entities = [BaseEntity::class],

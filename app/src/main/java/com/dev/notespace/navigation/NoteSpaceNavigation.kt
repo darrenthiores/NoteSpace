@@ -10,14 +10,8 @@ enum class NoteSpaceNavigation(
     Home(
         icon = Icons.Default.Home
     ),
-    Search(
-        icon = Icons.Default.Search
-    ),
     Post(
         icon = Icons.Default.Add
-    ),
-    Notification(
-        icon = Icons.Default.Notifications
     ),
     Profile(
         icon = Icons.Default.AccountCircle
@@ -27,8 +21,6 @@ enum class NoteSpaceNavigation(
         fun fromRoute(route: String?): NoteSpaceNavigation =
             when (route?.substringBefore("/")) {
                 Home.name -> Home
-                Search.name -> Search
-                Notification.name -> Notification
                 Profile.name -> Profile
                 null -> Home
                 else -> Home// throw IllegalArgumentException("Route $route is not recognized.")

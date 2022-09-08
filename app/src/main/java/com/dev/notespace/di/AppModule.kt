@@ -1,7 +1,7 @@
 package com.dev.notespace.di
 
-import com.dev.core.domain.NoteSpaceInteractor
-import com.dev.core.domain.NoteSpaceUseCase
+import com.dev.core.domain.useCase.NoteSpaceInteractor
+import com.dev.core.domain.useCase.NoteSpaceUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

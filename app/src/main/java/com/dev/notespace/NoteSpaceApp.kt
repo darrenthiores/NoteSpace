@@ -1,5 +1,8 @@
 package com.dev.notespace
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
@@ -14,19 +17,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.dev.core.model.presenter.User
+import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.BottomBar
 import com.dev.notespace.navigation.NoteSpaceNavigation
 import com.dev.notespace.navigation.NoteSpaceRegis
 import com.dev.notespace.navigation.NoteSpaceScreen
-import com.dev.notespace.screen.LandingScreen
-import com.dev.notespace.screen.HomeScreen
-import com.dev.notespace.screen.LoginScreen
-import com.dev.notespace.screen.MobileOtpScreen
-import com.dev.notespace.screen.RegisterScreen
+import com.dev.notespace.screen.*
+import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi
+@ExperimentalPagerApi
 @Composable
 fun NoteSpaceApp() {
     val allScreens = NoteSpaceNavigation.values().toList()
@@ -39,27 +40,28 @@ fun NoteSpaceApp() {
     var showBottomBar by remember {
         mutableStateOf(false)
     }
-    
+
+    val result = remember { mutableStateOf<Uri?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        if (it != null) {
+            result.value = it
+            navController.navigate(NoteSpaceNavigation.Post.name)
+        }
+    }
+
     navController.addOnDestinationChangedListener{ _, destination, _ ->
-        // if you need to hide either top bar or bottom bar in some navigation screen
-        when(destination.route) {
+        showBottomBar = when(destination.route) {
             NoteSpaceNavigation.Home.name -> {
-                showBottomBar = true
-            }
-            NoteSpaceNavigation.Search.name -> {
-                showBottomBar = true
-            }
-            NoteSpaceNavigation.Notification.name -> {
-                showBottomBar = true
+                true
             }
             NoteSpaceNavigation.Profile.name -> {
-                showBottomBar = true
+                true
             }
             else -> {
-                showBottomBar = false
+                false
             }
         }
     }
@@ -75,7 +77,7 @@ fun NoteSpaceApp() {
                     onTabSelected = { screen -> navController.navigate(screen.name) },
                     currentScreen = currentScreen,
                     onAddPostClicked = {
-
+                        launcher.launch("application/pdf")
                     }
                 )
             }
@@ -94,23 +96,44 @@ fun NoteSpaceApp() {
                         message
                     )
                 }
-            }
+            },
+            mediaUri = result.value
         )
     }
 }
 
 @ExperimentalComposeUiApi
+@ExperimentalPagerApi
 @Composable
 private fun NoteSpaceNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    showSnackBar: (String) -> Unit
+    showSnackBar: (String) -> Unit,
+    mediaUri: Uri?
 ) {
     NavHost(
         navController = navController,
-        startDestination = NoteSpaceScreen.Landing.name,
+        startDestination = NoteSpaceScreen.Splash.name,
         modifier = modifier
     ) {
+        composable(NoteSpaceScreen.Splash.name) {
+            SplashScreen(
+                navigateToLanding = {
+                    navController.navigate(NoteSpaceScreen.Landing.name) {
+                        popUpTo(NoteSpaceScreen.Splash.name) {
+                            inclusive = true
+                        }
+                    }
+                },
+                navigateToHome = {
+                    navController.navigate(NoteSpaceNavigation.Home.name) {
+                        popUpTo(NoteSpaceScreen.Splash.name) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
 
         composable(NoteSpaceScreen.Landing.name) {
             LandingScreen(navigateToLogin =  { navController.navigate(NoteSpaceRegis.Login.name) })
@@ -124,6 +147,7 @@ private fun NoteSpaceNavHost(
                 navigateToRegister =  { navController.navigate(NoteSpaceRegis.Register.name) }
             )
         }
+
         composable(
             route = "${NoteSpaceRegis.Otp.name}/{number}/{verificationId}/{user}",
             arguments = listOf(
@@ -143,18 +167,103 @@ private fun NoteSpaceNavHost(
                 verification_id = verificationId ?: "",
                 user = userObject,
                 showSnackBar = showSnackBar,
-                navigateToHome = { navController.navigate(NoteSpaceNavigation.Home.name) }
+                navigateToHome = {
+                    navController.navigate(NoteSpaceNavigation.Home.name) {
+                        popUpTo(NoteSpaceNavigation.Home.name) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onBackClicked = {
+                    navController.navigateUp()
+                }
             )
         }
+
         composable(NoteSpaceRegis.Register.name) {
             RegisterScreen(
                 navigateToOtp = { number, verificationId, user ->
                     navigateToOtp(navController, number, verificationId, user)
+                },
+                onBackClicked = {
+                    navController.navigateUp()
+                },
+                showSnackBar = showSnackBar
+            )
+        }
+
+        composable(NoteSpaceNavigation.Home.name) {
+            HomeScreen(
+                navigateToNoteDetail = { note_id, user_id ->
+                    navigateToNoteDetail(navController, note_id, user_id)
+                },
+                navigateToSearch = { subject ->
+                    navigateToSearch(navController, subject)
                 }
             )
         }
-        composable(NoteSpaceNavigation.Home.name) {
-            HomeScreen()
+
+        composable(
+            route = NoteSpaceNavigation.Post.name
+        ) {
+            AddScreen(
+                _mediaUri = mediaUri,
+                onBackClicked = {
+                    navController.navigateUp()
+                },
+                onPostSuccess = {
+                    navController.navigate(NoteSpaceNavigation.Home.name)
+                },
+                showSnackBar = showSnackBar
+            )
+        }
+
+        composable(
+            route = "${NoteSpaceScreen.NoteDetail.name}/{note_id}/{user_id}",
+            arguments = listOf(
+                navArgument("note_id") {
+                    type = NavType.StringType
+                },
+                navArgument("user_id") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("note_id")
+            val userId = backStackEntry.arguments?.getString("user_id")
+
+            if(noteId!=null && userId!=null) {
+                NoteDetailScreen(
+                    note_id = noteId,
+                    user_id = userId,
+                    onBackClicked = {
+                        navController.navigateUp()
+                    }
+                )
+            }
+        }
+
+        composable(
+            route = "${NoteSpaceScreen.Search.name}/{subject}",
+            arguments = listOf(
+                navArgument("subject") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val subject = backStackEntry.arguments?.getString("subject")
+
+            if(subject!=null) {
+                SearchScreen(
+                    subject = subject,
+                    navigateToNoteDetail = { note_id, user_id ->
+                        navigateToNoteDetail(navController, note_id, user_id)
+                    },
+                    onBackClicked = {
+                        navController.navigateUp()
+                    }
+                )
+            }
         }
     }
 }
@@ -167,4 +276,19 @@ private fun navigateToOtp(
 ) {
     navController.currentBackStackEntry?.arguments?.putParcelable("user", user)
     navController.navigate("${NoteSpaceRegis.Otp.name}/$number/$verificationId/{user}")
+}
+
+private fun navigateToNoteDetail(
+    navController: NavController,
+    note_id: String,
+    user_id: String
+) {
+    navController.navigate("${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id")
+}
+
+private fun navigateToSearch(
+    navController: NavController,
+    subject: String
+) {
+    navController.navigate("${NoteSpaceScreen.Search.name}/$subject")
 }

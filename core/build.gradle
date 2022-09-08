@@ -27,7 +27,10 @@ android {
         // firestore collection
         buildConfigField("String", "NOTESPACE_NUMBER_COLLECTION", '"notespace_number"')
         buildConfigField("String", "NOTESPACE_USER_COLLECTION", '"notespace_user"')
-        buildConfigField("String", "NOTESPACE_POST_COLLECTION", '"notespace_post"')
+        buildConfigField("String", "NOTESPACE_NOTE_COLLECTION", '"notespace_note"')
+
+        // data store key
+        buildConfigField("String", "INTEREST_KEY", '"INTEREST_OF_USER"')
     }
 
     buildTypes {
