@@ -4,9 +4,7 @@ import android.app.Activity
 import android.os.CountDownTimer
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -17,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.CommonDialog
+import com.dev.notespace.component.MidTitleTopBar
 import com.dev.notespace.component.OtpTextFields
 import com.dev.notespace.viewModel.OtpViewModel
 import com.google.firebase.FirebaseException
@@ -33,13 +32,14 @@ fun MobileOtpScreen(
     verification_id: String,
     user: User?,
     showSnackBar: (String) -> Unit,
-    navigateToHome: () -> Unit
+    navigateToHome: () -> Unit,
+    onBackClicked: () -> Unit
 ) {
     var verificationId by remember {
         mutableStateOf(verification_id)
     }
     var timerCount by rememberSaveable {
-        mutableStateOf<Long>(10000)
+        mutableStateOf<Long>(30000)
     }
     var cdTimer by remember {
         mutableStateOf<Long>(0)
@@ -53,6 +53,8 @@ fun MobileOtpScreen(
     val (message, setMessage) = remember {
         mutableStateOf("")
     }
+
+    val scaffoldState = rememberScaffoldState()
 
     val timer : CountDownTimer = object : CountDownTimer(timerCount, 1000){
 
@@ -92,57 +94,68 @@ fun MobileOtpScreen(
         timer.start()
     }
 
-    MobileOtpContent(
-        modifier = modifier,
-        viewModel = viewModel,
-        timer = cdTimer,
-        onResent = {
-            showLoading(true)
-            viewModel.sendVerificationCode(activity, "+62${number.drop(1)}", callbacks)
-        },
-        verifyOtp = {
-            if(viewModel.otp.value.length < 6) {
-                viewModel.otp.setErrorDes("Please Fill the OTP Code Correctly!")
-                viewModel.otp.setTextFieldError(true)
-            } else {
-                val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationId, viewModel.otp.value)
-                viewModel.signInWithCredential(credential)
-                    .addOnCompleteListener {
-                        if(it.isSuccessful) {
-                            if(user==null) {
-                                navigateToHome()
-                            } else {
-                                viewModel.registerUser(user)
-                                    .addOnCompleteListener { register ->
-                                        if(register.isSuccessful) {
-                                            viewModel.updateNumber(number)
-                                                .addOnCompleteListener { update ->
-                                                    if(update.isSuccessful) {
-                                                        navigateToHome()
+    Scaffold(
+        scaffoldState = scaffoldState,
+        topBar = {
+            MidTitleTopBar(
+                title = "Verify Otp",
+                onBackClicked = onBackClicked
+            )
+        }
+    ) {
+        MobileOtpContent(
+            modifier = modifier
+                .padding(it),
+            viewModel = viewModel,
+            timer = cdTimer,
+            onResent = {
+                showLoading(true)
+                viewModel.sendVerificationCode(activity, "+62${number.drop(1)}", callbacks)
+            },
+            verifyOtp = {
+                if(viewModel.otp.value.length < 6) {
+                    viewModel.otp.setErrorDes("Please Fill the OTP Code Correctly!")
+                    viewModel.otp.setTextFieldError(true)
+                } else {
+                    val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationId, viewModel.otp.value)
+                    viewModel.signInWithCredential(credential)
+                        .addOnCompleteListener {
+                            if(it.isSuccessful) {
+                                if(user==null) {
+                                    navigateToHome()
+                                } else {
+                                    viewModel.registerUser(user)
+                                        .addOnCompleteListener { register ->
+                                            if(register.isSuccessful) {
+                                                viewModel.updateNumber(number)
+                                                    .addOnCompleteListener { update ->
+                                                        if(update.isSuccessful) {
+                                                            navigateToHome()
+                                                        }
                                                     }
-                                                }
-                                                .addOnFailureListener {
-                                                    setMessage("Failed Registering User! Please Try Again")
-                                                    showDialog(true)
-                                                    viewModel.logOut()
-                                                }
+                                                    .addOnFailureListener {
+                                                        setMessage("Failed Registering User! Please Try Again")
+                                                        showDialog(true)
+                                                        viewModel.logOut()
+                                                    }
+                                            }
                                         }
-                                    }
-                                    .addOnFailureListener {
-                                        setMessage("Failed Registering User! Please Try Again")
-                                        showDialog(true)
-                                        viewModel.logOut()
-                                    }
+                                        .addOnFailureListener {
+                                            setMessage("Failed Registering User! Please Try Again")
+                                            showDialog(true)
+                                            viewModel.logOut()
+                                        }
+                                }
                             }
                         }
-                    }
-                    .addOnFailureListener {
-                        viewModel.otp.setErrorDes("OTP Code Incorrect, please check it!")
-                        viewModel.otp.setTextFieldError(true)
-                    }
+                        .addOnFailureListener {
+                            viewModel.otp.setErrorDes("OTP Code Incorrect, please check it!")
+                            viewModel.otp.setTextFieldError(true)
+                        }
+                }
             }
-        }
-    )
+        )
+    }
 
     if(loading) {
         Box(

@@ -3,28 +3,30 @@ package com.dev.notespace.screen
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.dev.core.data.Resource
 import com.dev.notespace.component.ActionTopBar
 import com.dev.notespace.component.DataInput
 import com.dev.notespace.component.PdfCarousel
 import com.dev.notespace.component.SubjectDropDown
+import com.dev.notespace.helper.MediaPicker
 import com.dev.notespace.holder.TextFieldHolder
 import com.dev.notespace.viewModel.AddViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -46,6 +48,10 @@ fun AddScreen(
         mutableStateOf(_mediaUri)
     }
 
+    val previewUri = remember {
+        mutableStateOf<Uri?>(null)
+    }
+
     val width = LocalConfiguration.current.screenWidthDp
     val height = (width * sqrt(2f)).toInt()
     val context = LocalContext.current
@@ -62,9 +68,17 @@ fun AddScreen(
         mutableStateOf(false)
     }
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+    val pdfLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         if (it != null) {
             mediaUri.value = it
+        } else {
+            showSnackBar("Something Error! Please try again..")
+        }
+    }
+
+    val imgLauncher = rememberLauncherForActivityResult(MediaPicker()) {
+        if (it != null) {
+            previewUri.value = it
         } else {
             showSnackBar("Something Error! Please try again..")
         }
@@ -84,9 +98,15 @@ fun AddScreen(
                         ) &&
                         mediaUri.value!=null
                     ) {
-                        viewModel.insertNote(mediaUri.value!!)
-                        isPosting = true
-                        showLoading = true
+                        if(previewUri.value!=null) {
+                            viewModel.insertNote(mediaUri.value!!, previewUri.value!!)
+                            isPosting = true
+                            showLoading = true
+                        } else {
+                            showSnackBar("Please add a preview!")
+                        }
+                    } else {
+                        showSnackBar("Something Error! Please try again...")
                     }
                 }
             )
@@ -98,7 +118,11 @@ fun AddScreen(
                 .padding(it),
             viewModel = viewModel,
             onRePickClicked = {
-                launcher.launch("application/pdf")
+                pdfLauncher.launch("application/pdf")
+            },
+            previewUri = previewUri,
+            onRePickPreview = {
+                imgLauncher.launch("")
             }
         )
     }
@@ -144,16 +168,19 @@ fun AddScreen(
 fun AddContent(
     modifier: Modifier = Modifier,
     viewModel: AddViewModel,
-    onRePickClicked: () -> Unit
+    onRePickClicked: () -> Unit,
+    previewUri: MutableState<Uri?>,
+    onRePickPreview: () -> Unit
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 16.dp)
+            .padding(horizontal = 8.dp)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
         PdfCarousel(
-            modifier = Modifier,
+            modifier = Modifier
+                .padding(top = 16.dp),
             count = viewModel.previews.size,
             previews = viewModel.previews
         )
@@ -161,7 +188,7 @@ fun AddContent(
         Text(
             text = "Change Pdf",
             modifier = Modifier
-                .padding(vertical = 16.dp)
+                .padding(16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color.LightGray)
@@ -172,6 +199,38 @@ fun AddContent(
             style = MaterialTheme.typography.caption,
             textAlign = TextAlign.Center
         )
+
+        if(previewUri.value == null) {
+            Box(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(100.dp)
+                    .background(Color.LightGray)
+                    .clip(RoundedCornerShape(4.dp))
+                    .clickable { onRePickPreview() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.Center),
+                    tint = Color.DarkGray
+                )
+            }
+        } else {
+            Image(
+                painter = rememberAsyncImagePainter(previewUri.value),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(100.dp)
+                    .background(Color.LightGray)
+                    .clip(RoundedCornerShape(4.dp))
+                    .clickable { onRePickPreview() },
+                contentScale = ContentScale.Crop
+            )
+        }
 
         DataInput(
             label = "name",
@@ -184,14 +243,15 @@ fun AddContent(
                 .height(200.dp),
             label = "description",
             textFieldHolder = viewModel.descriptionHolder,
-            maxLength = 150
+            maxLength = 150,
+            singleLine = false
         )
 
         SubjectDropDown(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp),
+                .padding(vertical = 16.dp),
             textFieldHolder = viewModel.subjectHolder
         )
     }

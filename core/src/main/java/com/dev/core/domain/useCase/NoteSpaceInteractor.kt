@@ -60,9 +60,10 @@ class NoteSpaceInteractor @Inject constructor(
         name: String,
         description: String,
         subject: String,
-        file: Uri
+        file: Uri,
+        preview: Uri
     ): Resource<Any?> =
-        repository.insertNote(name, description, subject, file)
+        repository.insertNote(name, description, subject, file, preview)
 
     override suspend fun getNoteById(note_id: String): Resource<NoteDomain> =
         repository.getNoteById(note_id)
@@ -84,6 +85,15 @@ class NoteSpaceInteractor @Inject constructor(
 
     override fun getNextUserNotes(lastVisible: String): Flow<Resource<List<NoteDomain>>> =
         repository.getNextUserNotes(lastVisible)
+
+    override fun getFirstNoteBySubject(subject: String): Flow<Resource<List<NoteDomain>>> =
+        repository.getFirstNoteBySubject(subject)
+
+    override fun getNextNoteBySubject(
+        subject: String,
+        lastVisible: String
+    ): Flow<Resource<List<NoteDomain>>> =
+        repository.getNextNoteBySubject(subject, lastVisible)
 
     override suspend fun getPdfFile(
         user_id: String, note_id: String, height: Int, width: Int

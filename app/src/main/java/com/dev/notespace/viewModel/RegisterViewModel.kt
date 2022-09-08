@@ -3,6 +3,7 @@ package com.dev.notespace.viewModel
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import com.dev.core.domain.useCase.NoteSpaceUseCase
+import com.dev.notespace.holder.ListFieldHolder
 import com.dev.notespace.holder.TextFieldHolder
 import com.google.firebase.auth.PhoneAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,7 @@ class RegisterViewModel @Inject constructor(
     val nameHolder = TextFieldHolder()
     val educationHolder = TextFieldHolder()
     val majorHolder = TextFieldHolder()
+    val interestsHolder = ListFieldHolder()
 
     fun sendVerificationCode(
         activity: Activity,

@@ -9,8 +9,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 class MediaPicker: ActivityResultContracts.GetContent() {
     override fun createIntent(context: Context, input: String): Intent {
         super.createIntent(context, input)
-        return Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "application/pdf"
+        return Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
         }
     }
 }

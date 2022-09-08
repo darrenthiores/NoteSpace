@@ -3,10 +3,7 @@ package com.dev.notespace.component
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,24 +26,35 @@ fun PdfCarousel(
     state: PagerState = rememberPagerState(),
     previews: List<ImageBitmap?>
 ) {
+    val width = LocalConfiguration.current.screenWidthDp
+    val height = (width * sqrt(2f)).toInt()
+
     HorizontalPager(
         count = count,
         state = state,
-        contentPadding = PaddingValues(horizontal = 32.dp),
         modifier = modifier
             .fillMaxWidth()
     ) { page ->
         val preview = previews[page]
-
-        val width = LocalConfiguration.current.screenWidthDp
-        val height = (width * sqrt(2f)).toInt()
 
         Image(
             bitmap = preview ?: ImageBitmap(width = width, height = height),
             contentDescription = null,
             modifier = Modifier
                 .aspectRatio(1f / sqrt(2f))
+                .fillMaxWidth(),
+            contentScale = ContentScale.Fit
+        )
+    }
+
+    if(count==0) {
+        Image(
+            bitmap = ImageBitmap(width = width, height = height),
+            contentDescription = null,
+            modifier = Modifier
+                .aspectRatio(1f / sqrt(2f))
                 .fillMaxWidth()
+                .height(height.dp)
                 .background(Color.LightGray),
             contentScale = ContentScale.Fit
         )

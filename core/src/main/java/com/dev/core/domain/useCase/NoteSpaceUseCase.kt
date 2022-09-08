@@ -41,7 +41,7 @@ interface NoteSpaceUseCase {
     suspend fun saveInterests(interests: List<String>)
 
     // note related
-    suspend fun insertNote(name: String, description: String, subject: String, file: Uri): Resource<Any?>
+    suspend fun insertNote(name: String, description: String, subject: String, file: Uri, preview: Uri): Resource<Any?>
 
     suspend fun getNoteById(note_id: String): Resource<NoteDomain>
 
@@ -54,6 +54,10 @@ interface NoteSpaceUseCase {
     fun getFirstUserNotes(): Flow<Resource<List<NoteDomain>>>
 
     fun getNextUserNotes(lastVisible: String): Flow<Resource<List<NoteDomain>>>
+
+    fun getFirstNoteBySubject(subject: String): Flow<Resource<List<NoteDomain>>>
+
+    fun getNextNoteBySubject(subject: String, lastVisible: String): Flow<Resource<List<NoteDomain>>>
 
     // storage
     suspend fun getPdfFile(user_id: String, note_id: String, height: Int, width: Int): List<ImageBitmap>

@@ -2,13 +2,12 @@ package com.dev.notespace.viewModel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.core.data.Resource
-import com.dev.core.domain.useCase.NoteSpaceUseCase
 import com.dev.core.domain.model.domain.NoteDomain
 import com.dev.core.domain.model.presenter.Note
+import com.dev.core.domain.useCase.NoteSpaceUseCase
 import com.dev.core.utils.DataMapper
 import com.dev.notespace.holder.SearchTextFieldHolder
 import com.dev.notespace.state.PagingState
@@ -20,65 +19,56 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val noteSpaceUseCase: NoteSpaceUseCase
+class SearchViewModel @Inject constructor(
+    private val useCase: NoteSpaceUseCase
 ): ViewModel() {
     var searchText = SearchTextFieldHolder()
 
-    private val _popularNotes = MutableStateFlow<Resource<List<NoteDomain>>>(Resource.Loading())
-    val popularNotes: StateFlow<Resource<List<NoteDomain>>>
-        get() = _popularNotes
-
-    var userPagingState = mutableStateOf(PagingState.FirstLoad)
+    var defaultPagingState = mutableStateOf(PagingState.FirstLoad)
         private set
 
-    private val _userNotes = mutableStateListOf<Note>()
-    val userNotes: List<Note>
-        get() = _userNotes
+    private val _defaultNotes = mutableStateListOf<Note>()
+    val defaultNotes: List<Note>
+        get() = _defaultNotes
 
-    fun userNextNote() = viewModelScope.launch {
-        noteSpaceUseCase
-            .getNextUserNotes(
-                _userNotes[_userNotes.size-1].note_id
-            ).collect {
-                when(it) {
-                    is Resource.Loading -> {
-                        userPagingState.value = PagingState.NextLoad
-                    }
-                    is Resource.Error -> {
-                        userPagingState.value = PagingState.NextLoadError
-                    }
-                    is Resource.Success -> {
-                        userPagingState.value = PagingState.Success
-                        val note = DataMapper.mapNotesDomainToPresenter(it.data!!)
-                        _userNotes.addAll(note)
-                    }
+    fun getFirstDefaultNotes(subject: String) = viewModelScope.launch {
+        useCase.getFirstNoteBySubject(subject = subject).collect {
+            when(it) {
+                is Resource.Loading -> {
+                    defaultPagingState.value = PagingState.FirstLoad
                 }
-            }
-    }
-
-    init {
-        viewModelScope.launch {
-            noteSpaceUseCase.getPopularNote().collect {
-                _popularNotes.value = it
-            }
-
-            noteSpaceUseCase.getFirstUserNotes().collect {
-                when(it) {
-                    is Resource.Loading -> {
-                        userPagingState.value = PagingState.FirstLoad
-                    }
-                    is Resource.Error -> {
-                        userPagingState.value = PagingState.FirstLoadError
-                    }
-                    is Resource.Success -> {
-                        userPagingState.value = PagingState.Success
-                        val note = DataMapper.mapNotesDomainToPresenter(it.data!!)
-                        _userNotes.addAll(note)
-                    }
+                is Resource.Error -> {
+                    defaultPagingState.value = PagingState.FirstLoadError
+                }
+                is Resource.Success -> {
+                    defaultPagingState.value = PagingState.Success
+                    val note = DataMapper.mapNotesDomainToPresenter(it.data!!)
+                    _defaultNotes.addAll(note)
                 }
             }
         }
+    }
+
+    fun defaultNextNote(subject: String) = viewModelScope.launch {
+        useCase
+            .getNextNoteBySubject(
+                subject = subject,
+                _defaultNotes[_defaultNotes.size-1].note_id
+            ).collect {
+                when(it) {
+                    is Resource.Loading -> {
+                        defaultPagingState.value = PagingState.NextLoad
+                    }
+                    is Resource.Error -> {
+                        defaultPagingState.value = PagingState.NextLoadError
+                    }
+                    is Resource.Success -> {
+                        defaultPagingState.value = PagingState.Success
+                        val note = DataMapper.mapNotesDomainToPresenter(it.data!!)
+                        _defaultNotes.addAll(note)
+                    }
+                }
+            }
     }
 
     var searchPagingState = mutableStateOf(PagingState.FirstLoad)
@@ -89,7 +79,7 @@ class HomeViewModel @Inject constructor(
         get() = _searchedNotes
 
     fun searchNotes() = viewModelScope.launch {
-        noteSpaceUseCase.getFirstHomeSearchedNote(searchText.enteredText).collect {
+        useCase.getFirstHomeSearchedNote(searchText.enteredText).collect {
             when(it) {
                 is Resource.Loading -> {
                     searchPagingState.value = PagingState.FirstLoad
@@ -108,7 +98,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun searchNextNote() = viewModelScope.launch {
-        noteSpaceUseCase
+        useCase
             .getNextHomeSearchedNote(
                 searchText.enteredText,
                 _searchedNotes[_searchedNotes.size-1].note_id

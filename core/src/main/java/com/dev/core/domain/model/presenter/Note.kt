@@ -6,5 +6,6 @@ data class Note(
     val description: String,
     val subject: String,
     val star: Int,
-    val user_id: String
+    val user_id: String,
+    val preview: String
 )

@@ -14,5 +14,7 @@ data class NoteRequest(
     @PropertyName("user_id")
     val user_id: String,
     @PropertyName("star")
-    val star: Int = 0
+    val star: Int = 0,
+    @PropertyName("preview")
+    val preview: String
 )

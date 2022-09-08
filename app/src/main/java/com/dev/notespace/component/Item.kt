@@ -23,18 +23,19 @@ import coil.compose.rememberAsyncImagePainter
 @Composable
 fun NoteItem(
     modifier: Modifier = Modifier,
-    preview: ImageBitmap?,
+    preview: String,
     star: Int,
     name: String,
-    subject: String
+    subject: String,
+    lastItem: Boolean = false
 ) {
     Card(
         modifier = modifier
-            .padding(horizontal = 4.dp)
+            .padding(end = if (lastItem) 0.dp else 8.dp)
             .width(180.dp)
-            .height(160.dp)
-            .clip(RoundedCornerShape(4.dp)),
-        elevation = 5.dp
+            .height(160.dp),
+        elevation = 8.dp,
+        shape = RoundedCornerShape(4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -45,7 +46,7 @@ fun NoteItem(
                     .height(100.dp)
             ){
                 Image(
-                    bitmap = preview ?: ImageBitmap(100, 100),
+                    painter = rememberAsyncImagePainter(preview),
                     contentDescription = null,
                     modifier = Modifier
                         .width(180.dp)
@@ -63,7 +64,8 @@ fun NoteItem(
                 ) {
                     Column(
                         modifier = Modifier
-                            .align(Alignment.Center)
+                            .align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
@@ -101,7 +103,7 @@ fun NoteItem(
 @Composable
 fun UserNoteItem(
     modifier: Modifier = Modifier,
-    preview: ImageBitmap?,
+    preview: String,
     star: Int,
     name: String,
     subject: String,
@@ -109,10 +111,9 @@ fun UserNoteItem(
 ) {
     Column(
         modifier = modifier
-            .padding(vertical = 8.dp)
             .fillMaxWidth()
     ) {
-        if(firstItem) {
+        if(!firstItem) {
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,11 +124,12 @@ fun UserNoteItem(
 
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                bitmap = preview ?: ImageBitmap(100, 100),
+                painter = rememberAsyncImagePainter(preview),
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp)
@@ -154,24 +156,26 @@ fun UserNoteItem(
             Box(
                 modifier = Modifier
                     .padding(4.dp)
-                    .size(30.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(Color.LightGray)
             ) {
                 Column(
                     modifier = Modifier
-                        .align(Alignment.Center)
+                        .align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Star(s)",
                         tint = Color.Yellow,
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(20.dp)
                     )
                     Text(
                         text = star.toString(),
-                        modifier = Modifier.padding(top = 2.dp)
+                        modifier = Modifier.padding(top = 1.dp),
+                        style = MaterialTheme.typography.caption
                     )
                 }
             }
@@ -182,57 +186,59 @@ fun UserNoteItem(
 @Composable
 fun SearchNoteItem(
     modifier: Modifier = Modifier,
-    preview: ImageBitmap?,
+    preview: String,
     star: Int,
     name: String,
     subject: String
 ) {
     Card(
         modifier = modifier
-            .padding(horizontal = 4.dp)
-            .width(160.dp)
+            .fillMaxWidth()
             .height(240.dp),
-        elevation = 2.dp
+        elevation = 4.dp,
+        shape = RoundedCornerShape(4.dp)
     ) {
         Column(
             modifier = Modifier
         ) {
             Box(
                 modifier = Modifier
-                    .width(160.dp)
-                    .height(200.dp)
+                    .fillMaxWidth()
+                    .height(180.dp)
             ){
                 Image(
-                    bitmap = preview ?: ImageBitmap(100, 100),
+                    painter = rememberAsyncImagePainter(preview),
                     contentDescription = null,
                     modifier = Modifier
-                        .width(160.dp)
-                        .height(200.dp)
+                        .fillMaxWidth()
+                        .height(180.dp)
                         .background(Color.LightGray),
                     contentScale = ContentScale.Crop
                 )
                 Box(
                     modifier = Modifier
                         .padding(4.dp)
-                        .size(30.dp)
+                        .size(36.dp)
                         .align(Alignment.TopEnd)
                         .clip(CircleShape)
                         .background(Color.LightGray)
                 ) {
                     Column(
                         modifier = Modifier
-                            .align(Alignment.Center)
+                            .align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "Star(s)",
                             tint = Color.Yellow,
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(20.dp)
                         )
                         Text(
                             text = star.toString(),
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 1.dp),
+                            style = MaterialTheme.typography.caption
                         )
                     }
                 }
@@ -240,7 +246,7 @@ fun SearchNoteItem(
             Text(
                 text = name,
                 modifier = Modifier
-                    .padding(top = 8.dp, start = 4.dp),
+                    .padding(top = 4.dp, start = 4.dp),
                 style = MaterialTheme.typography.subtitle1
             )
             Text(

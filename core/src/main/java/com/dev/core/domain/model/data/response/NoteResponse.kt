@@ -14,5 +14,7 @@ data class NoteResponse(
     @PropertyName("star")
     val star: Int = 0,
     @PropertyName("user_id")
-    val user_id: String = ""
+    val user_id: String = "",
+    @PropertyName("preview")
+    val preview: String = ""
 )

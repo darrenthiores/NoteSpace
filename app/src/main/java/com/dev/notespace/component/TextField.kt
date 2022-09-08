@@ -89,7 +89,8 @@ fun DataInput(
     modifier: Modifier = Modifier,
     label: String,
     textFieldHolder: TextFieldHolder,
-    maxLength: Int = 20
+    maxLength: Int = 20,
+    singleLine: Boolean = true
 ) {
     OutlinedTextField(
         value = textFieldHolder.value,
@@ -110,7 +111,7 @@ fun DataInput(
                 )
             }
         },
-        singleLine = true,
+        singleLine = singleLine,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -444,7 +445,7 @@ fun SearchTextField(
             Text(text = "Search Here...", style = MaterialTheme.typography.caption)
         },
         trailingIcon = trailingIcon,
-        shape = RoundedCornerShape(CornerSize(16.dp)),
+        shape = RoundedCornerShape(CornerSize(4.dp)),
         textStyle = TextStyle(fontSize = 12.sp),
         singleLine = true,
         colors = TextFieldDefaults.textFieldColors(

@@ -34,10 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.data.Resource
 import com.dev.core.utils.DataMapper
-import com.dev.notespace.component.HomePopularList
-import com.dev.notespace.component.SearchNoteItem
-import com.dev.notespace.component.SearchTextField
-import com.dev.notespace.component.UserNoteItem
+import com.dev.notespace.component.*
 import com.dev.notespace.state.PagingState
 import com.dev.notespace.viewModel.HomeViewModel
 import com.google.accompanist.flowlayout.FlowRow
@@ -47,12 +44,14 @@ import kotlin.math.roundToInt
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToSearch: (String) -> Unit
 ) {
     HomeContent(
         modifier = Modifier,
         viewModel = viewModel,
-        navigateToNoteDetail = navigateToNoteDetail
+        navigateToNoteDetail = navigateToNoteDetail,
+        navigateToSearch = navigateToSearch
     )
 }
 
@@ -60,7 +59,8 @@ fun HomeScreen(
 private fun HomeContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToSearch: (String) -> Unit
 ) {
     val toolbarHeight = 56.dp
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
@@ -87,9 +87,31 @@ private fun HomeContent(
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
     ) {
+        val enteredTextEmpty by remember {
+            derivedStateOf {
+                viewModel.searchText.enteredText.isEmpty()
+            }
+        }
+
+        if(enteredTextEmpty) {
+            HomeDefaultContent(
+                modifier = Modifier,
+                viewModel = viewModel,
+                defaultState = userListState,
+                navigateToNoteDetail = navigateToNoteDetail,
+                navigateToSearch = navigateToSearch
+            )
+        } else {
+            HomeSearchContent(
+                modifier = Modifier,
+                viewModel = viewModel,
+                state = searchListState,
+                navigateToNoteDetail = navigateToNoteDetail
+            )
+        }
+
         Row(
             modifier = Modifier
-                .padding(vertical = 4.dp)
                 .fillMaxWidth()
                 .height(toolbarHeight)
                 .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) }
@@ -117,8 +139,7 @@ private fun HomeContent(
                         {
                             Icon(
                                 imageVector = Icons.Default.Cancel,
-                                contentDescription = "Close",
-                                tint = Color.Red
+                                contentDescription = "Close"
                             )
                         }
                     }
@@ -138,28 +159,6 @@ private fun HomeContent(
                     contentDescription = "Saved Note"
                 )
             }
-        }
-
-        val enteredTextEmpty by remember {
-            derivedStateOf {
-                viewModel.searchText.enteredText.isEmpty()
-            }
-        }
-
-        if(enteredTextEmpty) {
-            HomeDefaultContent(
-                modifier = Modifier,
-                viewModel = viewModel,
-                defaultState = userListState,
-                navigateToNoteDetail = navigateToNoteDetail
-            )
-        } else {
-            HomeSearchContent(
-                modifier = Modifier,
-                viewModel = viewModel,
-                state = searchListState,
-                navigateToNoteDetail = navigateToNoteDetail
-            )
         }
     }
 }
@@ -184,103 +183,14 @@ private fun HomeSearchContent(
         }
     }
 
-    LazyVerticalGrid(
+    SearchList(
         modifier = modifier
-            .padding(top = 120.dp)
             .padding(horizontal = 16.dp),
-        columns = GridCells.Fixed(2),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        state = state
-    ) {
-        when(
-            viewModel.searchPagingState.value
-        ) {
-            PagingState.FirstLoad -> {
-
-            }
-            PagingState.FirstLoadError -> {
-                item {
-                    Text(
-                        text = "Error Loading First Page!",
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            else -> {
-                if(viewModel.userNotes.isEmpty()) {
-                    item {
-                        Text(
-                            text = "Have you make a note today?",
-                            modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    items(
-                        items = searchedNotes,
-                        key = { note -> note.note_id }
-                    ) { note ->
-                        var preview by remember {
-                            mutableStateOf<ImageBitmap?>(null)
-                        }
-
-                        LaunchedEffect(true) {
-                            viewModel.getPreview(
-                                note.user_id,
-                                note.note_id
-                            ) { imgBitmap -> preview = imgBitmap }
-                        }
-
-                        SearchNoteItem(
-                            modifier = Modifier
-                                .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
-                            preview = preview,
-                            star = note.star,
-                            name = note.name,
-                            subject = note.subject
-                        )
-                    }
-                }
-            }
-        }
-
-        if(
-            viewModel.userPagingState.value == PagingState.NextLoad
-        ) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .align(Alignment.Center)
-                    )
-                }
-            }
-        }
-
-        if(
-            viewModel.userPagingState.value == PagingState.NextLoadError
-        ) {
-            item {
-                Text(
-                    text = "Error Loading Next Page!",
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
+        searchedNotes = searchedNotes,
+        navigateToNoteDetail = navigateToNoteDetail,
+        state = state,
+        searchPagingState = viewModel.searchPagingState
+    )
 }
 
 @Composable
@@ -288,7 +198,8 @@ private fun HomeDefaultContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     defaultState: LazyListState,
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToSearch: (String) -> Unit
 ) {
     val notes = viewModel.popularNotes.collectAsState()
     val queryNextItem = remember {
@@ -305,16 +216,19 @@ private fun HomeDefaultContent(
 
     LazyColumn(
         modifier = modifier
-            .padding(top = 120.dp)
-            .padding(horizontal = 16.dp)
             .fillMaxWidth(),
+        contentPadding = PaddingValues(top = 80.dp),
         state = defaultState
     ) {
         item {
-            FlowRow {
+            FlowRow(
+                modifier = Modifier
+                    .padding(start = 10.dp, end = 10.dp)
+            ) {
                 subject().forEach {
                     Column(
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier
+                            .padding(10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
@@ -322,6 +236,9 @@ private fun HomeDefaultContent(
                                 .size(50.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colors.primary)
+                                .clickable {
+                                    navigateToSearch(it)
+                                }
                         )
                         Text(
                             modifier = Modifier.padding(top = 4.dp),
@@ -334,7 +251,8 @@ private fun HomeDefaultContent(
             Text(
                 text = "Popular Notes",
                 modifier = Modifier
-                    .padding(top = 32.dp),
+                    .padding(top = 32.dp)
+                    .padding(horizontal = 16.dp),
                 style = MaterialTheme.typography.h6.copy(
                     fontWeight = FontWeight.Bold
                 )
@@ -353,7 +271,6 @@ private fun HomeDefaultContent(
                     HomePopularList(
                         modifier = Modifier,
                         notes = data,
-                        getPreview = viewModel::getPreview,
                         navigateToNoteDetail = navigateToNoteDetail
                     )
                 }
@@ -364,7 +281,8 @@ private fun HomeDefaultContent(
             Text(
                 text = "My Notes",
                 modifier = Modifier
-                    .padding(top = 32.dp),
+                    .padding(top = 24.dp)
+                    .padding(horizontal = 16.dp),
                 style = MaterialTheme.typography.h6.copy(
                     fontWeight = FontWeight.Bold
                 )
@@ -383,6 +301,7 @@ private fun HomeDefaultContent(
                         text = "Error Loading First Page!",
                         modifier = Modifier
                             .padding(vertical = 8.dp)
+                            .padding(horizontal = 16.dp)
                             .fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
@@ -395,6 +314,7 @@ private fun HomeDefaultContent(
                             text = "Have you make a note today?",
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
+                                .padding(horizontal = 16.dp)
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
@@ -404,21 +324,11 @@ private fun HomeDefaultContent(
                         items = viewModel.userNotes,
                         key = { _, note -> note.note_id }
                     ) { index, note ->
-                        var preview by remember {
-                            mutableStateOf<ImageBitmap?>(null)
-                        }
-
-                        LaunchedEffect(true) {
-                            viewModel.getPreview(
-                                note.user_id,
-                                note.note_id
-                            ) { imgBitmap -> preview = imgBitmap }
-                        }
-
                         UserNoteItem(
                             modifier = Modifier
+                                .padding(horizontal = 16.dp)
                                 .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
-                            preview = preview,
+                            preview = note.preview,
                             star = note.star,
                             name = note.name,
                             subject = note.subject,
@@ -454,6 +364,7 @@ private fun HomeDefaultContent(
                     text = "Error Loading Next Page!",
                     modifier = Modifier
                         .padding(vertical = 8.dp)
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )

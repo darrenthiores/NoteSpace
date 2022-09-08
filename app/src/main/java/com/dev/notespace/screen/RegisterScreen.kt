@@ -2,9 +2,7 @@ package com.dev.notespace.screen
 
 import android.app.Activity
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.*
+import com.dev.notespace.holder.ListFieldHolder
 import com.dev.notespace.holder.TextFieldHolder
 import com.dev.notespace.viewModel.RegisterViewModel
 import com.google.firebase.FirebaseException
@@ -25,6 +24,8 @@ fun RegisterScreen(
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = hiltViewModel(),
     navigateToOtp: (String, String, User) -> Unit,
+    onBackClicked: () -> Unit,
+    showSnackBar: (String) -> Unit
 ) {
     val (loading, showLoading) = remember {
         mutableStateOf(false)
@@ -57,25 +58,38 @@ fun RegisterScreen(
                     viewModel.identifierHolder.value,
                     viewModel.educationHolder.value,
                     viewModel.majorHolder.value,
-                    emptyList()
+                    viewModel.interestsHolder.value.subList(0, viewModel.interestsHolder.value.size).toList()
                 )
             )
         }
     }
     val activity = LocalContext.current as Activity
+    val scaffoldState = rememberScaffoldState()
 
-    RegisterContent(
-        modifier = modifier,
-        sendVerificationCode = {
-            viewModel.sendVerificationCode(
-                activity, callbacks
+    Scaffold(
+        topBar = {
+            MidTitleTopBar(
+                title = "REGISTER",
+                onBackClicked = onBackClicked
             )
         },
-        viewModel = viewModel,
-        showDialog = showDialog,
-        setMessage = setMessage,
-        showLoading = showLoading
-    )
+        scaffoldState = scaffoldState
+    ) {
+        RegisterContent(
+            modifier = modifier
+                .padding(it),
+            sendVerificationCode = {
+                viewModel.sendVerificationCode(
+                    activity, callbacks
+                )
+            },
+            viewModel = viewModel,
+            showDialog = showDialog,
+            setMessage = setMessage,
+            showLoading = showLoading,
+            showSnackBar = showSnackBar
+        )
+    }
 
     if(loading) {
         Box(
@@ -103,7 +117,8 @@ private fun RegisterContent(
     sendVerificationCode: () -> Unit,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
-    showLoading: (Boolean) -> Unit
+    showLoading: (Boolean) -> Unit,
+    showSnackBar: (String) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -115,6 +130,14 @@ private fun RegisterContent(
             modifier = Modifier.padding(top = 16.dp),
             label = "Name",
             textFieldHolder = viewModel.nameHolder
+        )
+        InterestDropDown(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp),
+            listFieldHolder = viewModel.interestsHolder,
+            showSnackBar = showSnackBar
         )
         EducationDropDown(
             modifier = Modifier
@@ -141,6 +164,7 @@ private fun RegisterContent(
                     nameHolder = viewModel.nameHolder,
                     educationHolder = viewModel.educationHolder,
                     majorHolder = viewModel.majorHolder,
+                    interestHolder = viewModel.interestsHolder,
                     checkPhoneNumber = viewModel::checkPhoneNumber,
                     showDialog = showDialog,
                     setMessage = setMessage,
@@ -163,6 +187,7 @@ private fun onButtonRegisterClick(
     nameHolder: TextFieldHolder,
     educationHolder: TextFieldHolder,
     majorHolder: TextFieldHolder,
+    interestHolder: ListFieldHolder,
     checkPhoneNumber: () -> Boolean,
     showDialog: (Boolean) -> Unit,
     setMessage: (String) -> Unit,
@@ -176,6 +201,18 @@ private fun onButtonRegisterClick(
         nameHolder.value.length <= 5 -> {
             nameHolder.setErrorDes("Name Length Must Be Greater Than 5")
             nameHolder.setTextFieldError(true)
+        }
+        interestHolder.value.isEmpty() -> {
+            interestHolder.setErrorDes("You Must Choose 3-5 Interests")
+            interestHolder.setTextFieldError(true)
+        }
+        interestHolder.value.size < 3 -> {
+            interestHolder.setErrorDes("You Must Choose At Least 3 Interests")
+            interestHolder.setTextFieldError(true)
+        }
+        interestHolder.value.size > 5 -> {
+            interestHolder.setErrorDes("You Can Only Choose Up To 5 Interests")
+            interestHolder.setTextFieldError(true)
         }
         educationHolder.value.isEmpty() -> {
             educationHolder.setErrorDes("Please select your current education")

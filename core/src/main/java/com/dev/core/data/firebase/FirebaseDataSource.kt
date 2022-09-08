@@ -140,7 +140,6 @@ class FirebaseDataSource {
     fun getNextHomeSearchedNote(searchText: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereIn("name", listOf(searchText))
-            .whereIn("subject", listOf(searchText))
             .startAfter(lastVisible)
             .limit(20)
             .addSnapshotListener { value, error ->
@@ -218,9 +217,72 @@ class FirebaseDataSource {
         }
     }
 
+    fun getFirstNoteBySubject(subject: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
+        val listenerRegistration = noteCollection
+            .whereIn("subject", listOf(subject))
+            .limit(20)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(ApiResponse.Error(error.message.toString()))
+                    cancel(message = "Error fetching Notes", cause = error)
+                    return@addSnapshotListener
+                }
+
+                val notes = value?.documents?.mapNotNull {
+                    it.toObject(NoteResponse::class.java)
+                }
+
+                if(notes.isNullOrEmpty()) {
+                    trySend(ApiResponse.Error("Error Fetching Notes: null or empty"))
+                } else {
+                    trySend(ApiResponse.Success(notes))
+                }
+            }
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
+    fun getNextNoteBySubject(subject: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
+        val listenerRegistration = noteCollection
+            .whereIn("subject", listOf(subject))
+            .startAfter(lastVisible)
+            .limit(20)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(ApiResponse.Error(error.message.toString()))
+                    cancel(message = "Error fetching Notes", cause = error)
+                    return@addSnapshotListener
+                }
+
+                val notes = value?.documents?.mapNotNull {
+                    it.toObject(NoteResponse::class.java)
+                }
+
+                if(notes.isNullOrEmpty()) {
+                    trySend(ApiResponse.Error("Error Fetching Notes: null or empty"))
+                } else {
+                    trySend(ApiResponse.Success(notes))
+                }
+            }
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
     /**Storage**/
     private val storage = FirebaseStorage.getInstance()
     private val storageReference = storage.reference
+
+    fun insertPreview(note_id: String, preview: Uri): UploadTask =
+        storageReference
+            .child("notespace_preview/${auth.uid}/${note_id}")
+            .putFile(preview)
+
+    fun downloadPreview(note_id: String): Task<Uri> =
+        storageReference
+            .child("notespace_preview/${auth.uid}/${note_id}")
+            .downloadUrl
 
     fun insertPdfFile(note_id: String, file: Uri): UploadTask =
         storageReference

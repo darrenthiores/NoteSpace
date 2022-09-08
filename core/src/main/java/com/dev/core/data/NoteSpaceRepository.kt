@@ -93,16 +93,25 @@ class NoteSpaceRepository @Inject constructor(
         name: String,
         description: String,
         subject: String,
-        file: Uri
+        file: Uri,
+        preview: Uri
     ): Resource<Any?> {
         val noteId = "${UUID.randomUUID()}-notespace"
         val uploadFile = fbDataSource
             .insertPdfFile(noteId, file)
             .await()
 
-        if(uploadFile.task.isSuccessful) {
+        val uploadPreview = fbDataSource
+            .insertPreview(noteId, preview)
+            .await()
+
+        if(
+            uploadFile.task.isSuccessful &&
+            uploadPreview.task.isSuccessful
+        ) {
+            val url = fbDataSource.downloadPreview(noteId).await()
             return try {
-                val noteRequest = NoteRequest(noteId, name, description, subject, "")
+                val noteRequest = NoteRequest(noteId, name, description, subject, "", 0, url.toString())
                 fbDataSource
                     .insertNote(
                         noteRequest
@@ -114,7 +123,11 @@ class NoteSpaceRepository @Inject constructor(
                 Resource.Error(e.message.toString())
             }
         } else {
-            return Resource.Error(uploadFile.error?.message.toString())
+            return if(!uploadFile.task.isSuccessful) {
+                Resource.Error(uploadFile.error?.message.toString())
+            } else {
+                Resource.Error(uploadPreview.error?.message.toString())
+            }
         }
     }
 
@@ -211,6 +224,47 @@ class NoteSpaceRepository @Inject constructor(
         emit(Resource.Loading())
         when(
             val apiResponse = fbDataSource.getNextUserNotes(lastVisible).first()
+        ) {
+            is ApiResponse.Error -> {
+                emit(Resource.Error(apiResponse.errorMessage))
+            }
+            is ApiResponse.Empty -> {
+                emit(Resource.Loading())
+                delay(3000)
+                emit(Resource.Success(emptyList()))
+            }
+            is ApiResponse.Success -> {
+                emit(Resource.Success(DataMapper.mapNotesResponseToDomain(apiResponse.data)))
+            }
+        }
+    }
+
+    override fun getFirstNoteBySubject(subject: String): Flow<Resource<List<NoteDomain>>> = flow {
+        emit(Resource.Loading())
+        when(
+            val apiResponse = fbDataSource.getFirstNoteBySubject(subject).first()
+        ) {
+            is ApiResponse.Error -> {
+                emit(Resource.Error(apiResponse.errorMessage))
+            }
+            is ApiResponse.Empty -> {
+                emit(Resource.Loading())
+                delay(3000)
+                emit(Resource.Success(emptyList()))
+            }
+            is ApiResponse.Success -> {
+                emit(Resource.Success(DataMapper.mapNotesResponseToDomain(apiResponse.data)))
+            }
+        }
+    }
+
+    override fun getNextNoteBySubject(
+        subject: String,
+        lastVisible: String
+    ): Flow<Resource<List<NoteDomain>>> = flow {
+        emit(Resource.Loading())
+        when(
+            val apiResponse = fbDataSource.getNextNoteBySubject(subject, lastVisible).first()
         ) {
             is ApiResponse.Error -> {
                 emit(Resource.Error(apiResponse.errorMessage))

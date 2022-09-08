@@ -55,7 +55,8 @@ object DataMapper {
                 description = it.description,
                 subject = it.subject,
                 star = it.star,
-                user_id = it.user_id
+                user_id = it.user_id,
+                preview = it.preview
             )
         }
 
@@ -66,7 +67,8 @@ object DataMapper {
             description = input.description,
             subject = input.subject,
             star = input.star,
-            user_id = input.user_id
+            user_id = input.user_id,
+            preview = input.preview
         )
 
     fun mapNotesDomainToPresenter(input: List<NoteDomain>): List<Note> =
@@ -77,7 +79,8 @@ object DataMapper {
                 description = it.description,
                 subject = it.subject,
                 star = it.star,
-                user_id = it.user_id
+                user_id = it.user_id,
+                preview = it.preview
             )
         }
 
@@ -88,6 +91,7 @@ object DataMapper {
             description = input.description,
             subject = input.subject,
             star = input.star,
-            user_id = input.user_id
+            user_id = input.user_id,
+            preview = input.preview
         )
 }

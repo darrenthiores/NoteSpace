@@ -74,13 +74,14 @@ class AddViewModel @Inject constructor(
     val insertResult: State<Resource<Any?>>
         get() = _insertResult
 
-    fun insertNote(file: Uri) = viewModelScope.launch {
+    fun insertNote(file: Uri, previewUri: Uri) = viewModelScope.launch {
         _insertResult.value =
             useCase.insertNote(
                 nameHolder.value,
                 descriptionHolder.value,
                 subjectHolder.value,
-                file
+                file,
+                previewUri
             )
     }
 

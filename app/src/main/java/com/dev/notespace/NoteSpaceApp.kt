@@ -113,11 +113,30 @@ private fun NoteSpaceNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NoteSpaceScreen.Landing.name,
+        startDestination = NoteSpaceScreen.Splash.name,
         modifier = modifier
     ) {
+        composable(NoteSpaceScreen.Splash.name) {
+            SplashScreen(
+                navigateToLanding = {
+                    navController.navigate(NoteSpaceScreen.Landing.name) {
+                        popUpTo(NoteSpaceScreen.Splash.name) {
+                            inclusive = true
+                        }
+                    }
+                },
+                navigateToHome = {
+                    navController.navigate(NoteSpaceNavigation.Home.name) {
+                        popUpTo(NoteSpaceScreen.Splash.name) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
         composable(NoteSpaceScreen.Landing.name) {
-            LandingScreen(navigateToLogin =  { navController.navigate(NoteSpaceNavigation.Home.name) })
+            LandingScreen(navigateToLogin =  { navController.navigate(NoteSpaceRegis.Login.name) })
         }
 
         composable(NoteSpaceRegis.Login.name) {
@@ -148,7 +167,16 @@ private fun NoteSpaceNavHost(
                 verification_id = verificationId ?: "",
                 user = userObject,
                 showSnackBar = showSnackBar,
-                navigateToHome = { navController.navigate(NoteSpaceNavigation.Home.name) }
+                navigateToHome = {
+                    navController.navigate(NoteSpaceNavigation.Home.name) {
+                        popUpTo(NoteSpaceNavigation.Home.name) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onBackClicked = {
+                    navController.navigateUp()
+                }
             )
         }
 
@@ -156,7 +184,11 @@ private fun NoteSpaceNavHost(
             RegisterScreen(
                 navigateToOtp = { number, verificationId, user ->
                     navigateToOtp(navController, number, verificationId, user)
-                }
+                },
+                onBackClicked = {
+                    navController.navigateUp()
+                },
+                showSnackBar = showSnackBar
             )
         }
 
@@ -164,6 +196,9 @@ private fun NoteSpaceNavHost(
             HomeScreen(
                 navigateToNoteDetail = { note_id, user_id ->
                     navigateToNoteDetail(navController, note_id, user_id)
+                },
+                navigateToSearch = { subject ->
+                    navigateToSearch(navController, subject)
                 }
             )
         }
@@ -207,6 +242,29 @@ private fun NoteSpaceNavHost(
                 )
             }
         }
+
+        composable(
+            route = "${NoteSpaceScreen.Search.name}/{subject}",
+            arguments = listOf(
+                navArgument("subject") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val subject = backStackEntry.arguments?.getString("subject")
+
+            if(subject!=null) {
+                SearchScreen(
+                    subject = subject,
+                    navigateToNoteDetail = { note_id, user_id ->
+                        navigateToNoteDetail(navController, note_id, user_id)
+                    },
+                    onBackClicked = {
+                        navController.navigateUp()
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -226,4 +284,11 @@ private fun navigateToNoteDetail(
     user_id: String
 ) {
     navController.navigate("${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id")
+}
+
+private fun navigateToSearch(
+    navController: NavController,
+    subject: String
+) {
+    navController.navigate("${NoteSpaceScreen.Search.name}/$subject")
 }

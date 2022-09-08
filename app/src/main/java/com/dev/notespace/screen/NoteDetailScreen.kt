@@ -78,6 +78,7 @@ private fun NoteDetailContent(
 ) {
     Column(
         modifier = modifier
+            .padding(vertical = 16.dp, horizontal = 8.dp)
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
