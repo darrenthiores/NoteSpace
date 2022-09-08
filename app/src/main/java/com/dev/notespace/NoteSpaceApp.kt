@@ -113,7 +113,8 @@ private fun NoteSpaceNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NoteSpaceScreen.Splash.name,
+//        startDestination = NoteSpaceScreen.Splash.name,
+        startDestination = NoteSpaceNavigation.Home.name,
         modifier = modifier
     ) {
         composable(NoteSpaceScreen.Splash.name) {
@@ -201,6 +202,10 @@ private fun NoteSpaceNavHost(
                     navigateToSearch(navController, subject)
                 }
             )
+        }
+
+        composable(NoteSpaceNavigation.Profile.name) {
+            ProfileScreen()
         }
 
         composable(
