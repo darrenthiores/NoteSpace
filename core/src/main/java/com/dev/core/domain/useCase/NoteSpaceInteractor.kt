@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import com.dev.core.data.Resource
 import com.dev.core.domain.repository.INoteSpaceRepository
 import com.dev.core.domain.model.domain.NoteDomain
+import com.dev.core.domain.model.domain.StarredNoteDomain
 import com.dev.core.domain.model.domain.UserDomain
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
@@ -94,6 +95,24 @@ class NoteSpaceInteractor @Inject constructor(
         lastVisible: String
     ): Flow<Resource<List<NoteDomain>>> =
         repository.getNextNoteBySubject(subject, lastVisible)
+
+    override suspend fun insertNoteToStarred(note_id: String) =
+        repository.insertNoteToStarred(note_id)
+
+    override suspend fun unStarNote(note_id: String) =
+        repository.unStarNote(note_id)
+
+    override suspend fun getFirstStarredId(): Flow<Resource<List<StarredNoteDomain>>> =
+        repository.getFirstStarredId()
+
+    override suspend fun getNextStarredId(lastVisible: String): Flow<Resource<List<StarredNoteDomain>>> =
+        repository.getNextStarredId(lastVisible)
+
+    override suspend fun checkIsNoteStarred(note_id: String): Boolean =
+        repository.checkIsNoteStarred(note_id)
+
+    override suspend fun updateNoteStarCount(note_id: String, newCount: Int) =
+        repository.updateNoteStarCount(note_id, newCount)
 
     override suspend fun getPdfFile(
         user_id: String, note_id: String, height: Int, width: Int

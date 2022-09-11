@@ -199,6 +199,9 @@ private fun NoteSpaceNavHost(
                 },
                 navigateToSearch = { subject ->
                     navigateToSearch(navController, subject)
+                },
+                navigateToStarred = {
+                    navController.navigate(NoteSpaceScreen.Starred.name)
                 }
             )
         }
@@ -264,6 +267,17 @@ private fun NoteSpaceNavHost(
                     }
                 )
             }
+        }
+
+        composable(NoteSpaceScreen.Starred.name) {
+            StarredNoteScreen(
+                navigateToNoteDetail = { note_id, user_id ->
+                    navigateToNoteDetail(navController, note_id, user_id)
+                },
+                onBackClicked = {
+                    navController.navigateUp()
+                }
+            )
         }
     }
 }

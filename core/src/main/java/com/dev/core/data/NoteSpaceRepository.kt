@@ -9,14 +9,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.dev.core.data.dataStore.DataStore
 import com.dev.core.data.firebase.FirebaseDataSource
-import com.dev.core.data.local.LocalDataSource
-import com.dev.core.data.remote.source.ApiResponse
-import com.dev.core.data.remote.source.RemoteDataSource
+import com.dev.core.data.firebase.ApiResponse
 import com.dev.core.domain.repository.INoteSpaceRepository
 import com.dev.core.domain.model.data.request.NoteRequest
+import com.dev.core.domain.model.data.request.StarNoteRequest
 import com.dev.core.domain.model.data.response.NoteResponse
 import com.dev.core.domain.model.data.response.UserResponse
 import com.dev.core.domain.model.domain.NoteDomain
+import com.dev.core.domain.model.domain.StarredNoteDomain
 import com.dev.core.domain.model.domain.UserDomain
 import com.dev.core.utils.Converters
 import com.dev.core.utils.DataMapper
@@ -37,8 +37,6 @@ import javax.inject.Singleton
 
 @Singleton
 class NoteSpaceRepository @Inject constructor(
-    private val remoteDataSource: RemoteDataSource,
-    private val localDataSource: LocalDataSource,
     private val dataStore: DataStore,
     private val fbDataSource: FirebaseDataSource
 ): INoteSpaceRepository {
@@ -279,6 +277,56 @@ class NoteSpaceRepository @Inject constructor(
             }
         }
     }
+
+    override suspend fun insertNoteToStarred(note_id: String) =
+        fbDataSource.insertNoteToStared(StarNoteRequest(note_id = note_id, user_id = ""))
+
+    override suspend fun unStarNote(note_id: String) =
+        fbDataSource.unStarNote(note_id)
+
+    override suspend fun getFirstStarredId(): Flow<Resource<List<StarredNoteDomain>>> = flow {
+        emit(Resource.Loading())
+        when(
+            val apiResponse = fbDataSource.getFirstUserStarredNotesId().first()
+        ) {
+            is ApiResponse.Error -> {
+                emit(Resource.Error(apiResponse.errorMessage))
+            }
+            is ApiResponse.Empty -> {
+                emit(Resource.Loading())
+                delay(3000)
+                emit(Resource.Success(emptyList()))
+            }
+            is ApiResponse.Success -> {
+                emit(Resource.Success(DataMapper.mapStarredNoteResponsesToDomain(apiResponse.data)))
+            }
+        }
+    }
+
+    override suspend fun getNextStarredId(lastVisible: String): Flow<Resource<List<StarredNoteDomain>>> = flow {
+        emit(Resource.Loading())
+        when(
+            val apiResponse = fbDataSource.getNextUserStarredNotesId(lastVisible).first()
+        ) {
+            is ApiResponse.Error -> {
+                emit(Resource.Error(apiResponse.errorMessage))
+            }
+            is ApiResponse.Empty -> {
+                emit(Resource.Loading())
+                delay(3000)
+                emit(Resource.Success(emptyList()))
+            }
+            is ApiResponse.Success -> {
+                emit(Resource.Success(DataMapper.mapStarredNoteResponsesToDomain(apiResponse.data)))
+            }
+        }
+    }
+
+    override suspend fun checkIsNoteStarred(note_id: String): Boolean =
+        fbDataSource.checkIsNoteStarred(note_id)
+
+    override suspend fun updateNoteStarCount(note_id: String, newCount: Int) =
+        fbDataSource.updateNoteCount(note_id, newCount)
 
     override suspend fun getPdfFile(
         user_id: String,

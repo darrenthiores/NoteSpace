@@ -19,15 +19,14 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
-
-        buildConfigField("String", "BASE_URL", '"BASEURLHERE"') // if your app use Ktor
-        buildConfigField("String", "SQL_PASSWORD", '"ANYTHING"') // if your app use Room (for sqlite chiper)
+        // ds
         buildConfigField("String", "DATA_STORE_NAME", '"NOTE_SPACE_DS"')
 
         // firestore collection
         buildConfigField("String", "NOTESPACE_NUMBER_COLLECTION", '"notespace_number"')
         buildConfigField("String", "NOTESPACE_USER_COLLECTION", '"notespace_user"')
         buildConfigField("String", "NOTESPACE_NOTE_COLLECTION", '"notespace_note"')
+        buildConfigField("String", "NOTESPACE_STAR_COLLECTION", '"notespace_starred"')
 
         // data store key
         buildConfigField("String", "INTEREST_KEY", '"INTEREST_OF_USER"')

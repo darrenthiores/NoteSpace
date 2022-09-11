@@ -1,8 +1,6 @@
 package com.dev.notespace.viewModel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
@@ -13,6 +11,7 @@ import com.dev.core.domain.model.domain.NoteDomain
 import com.dev.core.domain.model.domain.UserDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,5 +45,27 @@ class NoteDetailViewModel @Inject constructor(
         width: Int
     ) = viewModelScope.launch {
         _previews.addAll(useCase.getPdfFile(user_id, note_id, height = height, width = width))
+    }
+
+    fun checkIsNoteStarred(note_id: String): Boolean = runBlocking { useCase.checkIsNoteStarred(note_id) }
+
+    fun starNote(note_id: String) = viewModelScope.launch {
+        useCase.insertNoteToStarred(note_id)
+    }
+
+    fun unStarNote(note_id: String) = viewModelScope.launch {
+        useCase.unStarNote(note_id)
+    }
+
+    var currentStar by mutableStateOf<Int?>(null)
+    private set
+
+    fun setStar(star: Int) {
+        currentStar = star
+    }
+
+    fun updateNoteCount(note_id: String, newCount: Int) = viewModelScope.launch {
+        useCase.updateNoteStarCount(note_id, (currentStar!! + newCount))
+        currentStar = currentStar!! + newCount
     }
 }

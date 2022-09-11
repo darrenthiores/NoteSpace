@@ -1,27 +1,24 @@
 package com.dev.notespace.screen
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.dev.core.data.Resource
 import com.dev.core.domain.model.domain.NoteDomain
 import com.dev.core.domain.model.domain.UserDomain
@@ -45,10 +42,15 @@ fun NoteDetailScreen(
     val width = LocalConfiguration.current.screenWidthDp
     val height = (width * sqrt(2f)).toInt()
 
+    val isNoteStarred = remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(true) {
         viewModel.setNote(note_id)
         viewModel.setUploader(user_id)
         viewModel.getPreviews(user_id, note_id, height, width)
+        isNoteStarred.value = viewModel.checkIsNoteStarred(note_id)
     }
 
     val scaffoldState = rememberScaffoldState()
@@ -57,7 +59,28 @@ fun NoteDetailScreen(
         topBar = {
             MidTitleTopBar(
                 title = "Note Detail",
-                onBackClicked = onBackClicked
+                onBackClicked = onBackClicked,
+                endContent = {
+                    IconButton(onClick = {
+                        if(viewModel.currentStar != null) {
+                            if(isNoteStarred.value) {
+                                viewModel.unStarNote(note_id)
+                                viewModel.updateNoteCount(note_id, -1)
+                            } else {
+                                viewModel.starNote(note_id)
+                                viewModel.updateNoteCount(note_id, 1)
+                            }
+
+                            isNoteStarred.value = !isNoteStarred.value
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Star",
+                            tint = if(isNoteStarred.value) Color.Yellow else Color.LightGray
+                        )
+                    }
+                }
             )
         },
         scaffoldState = scaffoldState
@@ -78,14 +101,16 @@ private fun NoteDetailContent(
 ) {
     Column(
         modifier = modifier
-            .padding(vertical = 16.dp, horizontal = 8.dp)
+            .padding(horizontal = 8.dp)
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
         NoteItem(
             modifier = Modifier,
             note = viewModel.note,
-            previews = viewModel.previews
+            previews = viewModel.previews,
+            starCount = viewModel.currentStar,
+            updateCurrentStar = viewModel::setStar
         )
 
         UploaderItem(
@@ -100,7 +125,9 @@ private fun NoteDetailContent(
 private fun ColumnScope.NoteItem(
     modifier: Modifier = Modifier,
     note: State<Resource<NoteDomain>>,
-    previews: List<ImageBitmap?>
+    previews: List<ImageBitmap?>,
+    starCount: Int?,
+    updateCurrentStar: (Int) -> Unit
 ) {
     when(note.value) {
         is Resource.Loading -> {
@@ -111,42 +138,96 @@ private fun ColumnScope.NoteItem(
         }
         is Resource.Success -> {
             val data = DataMapper.mapNoteDomainToPresenter(note.value.data!!)
+
+            LaunchedEffect(true) {
+                updateCurrentStar(data.star)
+            }
+
             PdfCarousel(
-                modifier = modifier,
+                modifier = modifier
+                    .padding(PaddingValues(top = 16.dp)),
                 count = previews.size,
                 previews = previews
             )
 
-            Row {
-                Text(text = data.name)
-                Box(
+            Divider(
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color.LightGray)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Column(
                     modifier = Modifier
-                        .padding(4.dp)
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(Color.LightGray)
+                        .weight(1f)
                 ) {
-                    Column(
+                    Text(
+                        modifier = Modifier,
+                        text = data.name,
+                        style = MaterialTheme.typography.h5.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Star(s)",
-                            tint = Color.Yellow,
-                            modifier = Modifier
-                                .size(24.dp)
-                        )
-                        Text(
-                            text = data.star.toString(),
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
+                            .padding(top = 4.dp),
+                        text = data.subject,
+                        style = MaterialTheme.typography.subtitle1
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star(s)",
+                        tint = Color.Yellow,
+                        modifier = Modifier
+                            .size(24.dp)
+                    )
+                    Text(
+                        text = (starCount ?: 0).toString(),
+                        modifier = Modifier.padding(start = 2.dp)
+                    )
                 }
             }
 
-            Text(text = data.subject)
-            Text(text = data.description)
+            if(data.description.isNotEmpty()) {
+                Text(
+                    modifier = Modifier
+                        .padding(top = 16.dp),
+                    text = data.description,
+                    style = MaterialTheme.typography.caption
+                )
+            }
+
+            Text(
+                text = "Preview",
+                modifier = Modifier
+                    .padding(top = 16.dp),
+                style = MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+
+            Image(
+                painter = rememberAsyncImagePainter(data.preview),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .size(100.dp)
+                    .background(Color.LightGray)
+                    .clip(RoundedCornerShape(4.dp)),
+                contentScale = ContentScale.Crop
+            )
         }
     }
 }
@@ -165,14 +246,43 @@ private fun ColumnScope.UploaderItem(
         }
         is Resource.Success -> {
             val data = DataMapper.mapUserDomainToPresenter(uploader.value.data!!)
-            Text(text = data.name)
-            Row {
-                Text(text = data.education)
-                Text(text = data.major)
-            }
-            FlowRow {
+
+            Text(
+                text = "Upload By",
+                modifier = Modifier
+                    .padding(top = 32.dp),
+                style = MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+
+            Text(
+                modifier = Modifier
+                    .padding(top = 8.dp),
+                text = data.name,
+                style = MaterialTheme.typography.subtitle1.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+
+            Text(
+                modifier = Modifier
+                    .padding(top = 4.dp),
+                text = "${data.education} - ${data.major}",
+                style = MaterialTheme.typography.subtitle2
+            )
+
+            FlowRow(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+            ) {
                 data.interests.forEach {
-                    Text(text = it)
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 4.dp, end = 4.dp),
+                        text = "#$it",
+                        style = MaterialTheme.typography.caption
+                    )
                 }
             }
         }

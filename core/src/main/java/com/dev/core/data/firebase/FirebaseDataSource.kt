@@ -3,10 +3,11 @@ package com.dev.core.data.firebase
 import android.app.Activity
 import android.net.Uri
 import com.dev.core.BuildConfig
-import com.dev.core.data.remote.source.ApiResponse
 import com.dev.core.domain.model.data.request.NoteRequest
+import com.dev.core.domain.model.data.request.StarNoteRequest
 import com.dev.core.domain.model.data.request.UserRequest
 import com.dev.core.domain.model.data.response.NoteResponse
+import com.dev.core.domain.model.data.response.StarredResponse
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.DocumentSnapshot
@@ -20,6 +21,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.tasks.await
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class FirebaseDataSource {
@@ -60,6 +64,7 @@ class FirebaseDataSource {
     private val userCollection = fireStore.collection(BuildConfig.NOTESPACE_USER_COLLECTION)
     private val mobileCollection = fireStore.collection(BuildConfig.NOTESPACE_NUMBER_COLLECTION)
     private val noteCollection = fireStore.collection(BuildConfig.NOTESPACE_NOTE_COLLECTION)
+    private val noteStarredCollection = fireStore.collection(BuildConfig.NOTESPACE_STAR_COLLECTION)
 
     // user related
     fun setUser(user:UserRequest):Task<Void> = userCollection.document(auth.uid!!).set(user)
@@ -114,6 +119,7 @@ class FirebaseDataSource {
     fun getFirstHomeSearchedNote(searchText: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereIn("name", listOf(searchText))
+            .orderBy("note_id", Query.Direction.DESCENDING)
             .limit(20)
             .addSnapshotListener { value, error ->
                 if (error != null) {
@@ -140,8 +146,9 @@ class FirebaseDataSource {
     fun getNextHomeSearchedNote(searchText: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereIn("name", listOf(searchText))
+            .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
-            .limit(20)
+            .limit(5)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -167,7 +174,8 @@ class FirebaseDataSource {
     fun getFirstUserNotes(): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereEqualTo("user_id", auth.uid)
-            .limit(20)
+            .orderBy("note_id", Query.Direction.DESCENDING)
+            .limit(5)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -193,8 +201,9 @@ class FirebaseDataSource {
     fun getNextUserNotes(lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereEqualTo("user_id", auth.uid)
+            .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
-            .limit(20)
+            .limit(5)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -220,6 +229,7 @@ class FirebaseDataSource {
     fun getFirstNoteBySubject(subject: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereIn("subject", listOf(subject))
+            .orderBy("note_id", Query.Direction.DESCENDING)
             .limit(20)
             .addSnapshotListener { value, error ->
                 if (error != null) {
@@ -246,6 +256,7 @@ class FirebaseDataSource {
     fun getNextNoteBySubject(subject: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
             .whereIn("subject", listOf(subject))
+            .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
             .limit(20)
             .addSnapshotListener { value, error ->
@@ -268,6 +279,97 @@ class FirebaseDataSource {
         awaitClose {
             listenerRegistration.remove()
         }
+    }
+
+    // note starred
+    suspend fun insertNoteToStared(starNoteRequest: StarNoteRequest) {
+        val starredNote = starNoteRequest.copy(user_id = auth.uid!!)
+        noteStarredCollection
+            .document("${starredNote.note_id}-${starredNote.user_id}")
+            .set(starredNote)
+            .await()
+    }
+
+    suspend fun unStarNote(note_id: String) {
+        noteStarredCollection
+            .document("$note_id-${auth.uid}")
+            .delete()
+            .await()
+    }
+
+    suspend fun getFirstUserStarredNotesId(): Flow<ApiResponse<List<StarredResponse>>> = callbackFlow {
+        val listenerRegistration = noteStarredCollection
+            .whereEqualTo("user_id", (auth.uid ?: ""))
+            .orderBy("note_id", Query.Direction.DESCENDING)
+            .limit(10)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(ApiResponse.Error(error.message.toString()))
+                    cancel(message = "Error fetching Notes", cause = error)
+                    return@addSnapshotListener
+                }
+
+                val notes = value?.documents?.mapNotNull {
+                    it.toObject(StarredResponse::class.java)
+                }
+
+                if(notes.isNullOrEmpty()) {
+                    trySend(ApiResponse.Error("Error Fetching Notes: null or empty"))
+                } else {
+                    trySend(ApiResponse.Success(notes))
+                }
+            }
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
+    suspend fun getNextUserStarredNotesId(lastVisible: String): Flow<ApiResponse<List<StarredResponse>>> = callbackFlow {
+        val listenerRegistration = noteStarredCollection
+            .whereEqualTo("user_id", (auth.uid ?: ""))
+            .orderBy("note_id", Query.Direction.DESCENDING)
+            .startAfter(lastVisible)
+            .limit(10)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(ApiResponse.Error(error.message.toString()))
+                    cancel(message = "Error fetching Notes", cause = error)
+                    return@addSnapshotListener
+                }
+
+                val notes = value?.documents?.mapNotNull {
+                    it.toObject(StarredResponse::class.java)
+                }
+
+                if(notes.isNullOrEmpty()) {
+                    trySend(ApiResponse.Error("Error Fetching Notes: null or empty"))
+                } else {
+                    trySend(ApiResponse.Success(notes))
+                }
+            }
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
+    suspend fun checkIsNoteStarred(note_id: String): Boolean =
+        !noteStarredCollection
+            .whereEqualTo("note_id", note_id)
+            .whereEqualTo("user_id", auth.uid)
+            .limit(1)
+            .get()
+            .await()
+            .isEmpty
+
+    suspend fun updateNoteCount(note_id: String, newCount: Int) {
+        noteCollection
+            .document(note_id)
+            .update(
+                mapOf(
+                    "star" to newCount
+                )
+            )
+            .await()
     }
 
     /**Storage**/

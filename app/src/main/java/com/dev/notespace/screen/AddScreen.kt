@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -180,7 +181,7 @@ fun AddContent(
     ) {
         PdfCarousel(
             modifier = Modifier
-                .padding(top = 16.dp),
+                .padding(PaddingValues(top = 16.dp)),
             count = viewModel.previews.size,
             previews = viewModel.previews
         )
@@ -198,6 +199,16 @@ fun AddContent(
                 .padding(vertical = 2.dp),
             style = MaterialTheme.typography.caption,
             textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "Add Preview",
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.h6.copy(
+                fontWeight = FontWeight.SemiBold
+            )
         )
 
         if(previewUri.value == null) {
@@ -250,8 +261,7 @@ fun AddContent(
         SubjectDropDown(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             textFieldHolder = viewModel.subjectHolder
         )
     }

@@ -4,5 +4,6 @@ enum class NoteSpaceScreen {
     Splash,
     Landing,
     NoteDetail,
-    Search
+    Search,
+    Starred
 }

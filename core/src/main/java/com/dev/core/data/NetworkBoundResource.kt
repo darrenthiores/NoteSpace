@@ -1,6 +1,6 @@
 package com.dev.core.data
 
-import com.dev.core.data.remote.source.ApiResponse
+import com.dev.core.data.firebase.ApiResponse
 import kotlinx.coroutines.flow.*
 
 abstract class NetworkBoundResource<ResultType, RequestType> {

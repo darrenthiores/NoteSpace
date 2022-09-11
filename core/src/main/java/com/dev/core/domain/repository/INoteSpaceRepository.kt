@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import com.dev.core.data.Resource
 import com.dev.core.domain.model.domain.NoteDomain
+import com.dev.core.domain.model.domain.StarredNoteDomain
 import com.dev.core.domain.model.domain.UserDomain
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
@@ -58,6 +59,19 @@ interface INoteSpaceRepository {
     fun getFirstNoteBySubject(subject: String): Flow<Resource<List<NoteDomain>>>
 
     fun getNextNoteBySubject(subject: String, lastVisible: String): Flow<Resource<List<NoteDomain>>>
+
+    // star a note related
+    suspend fun insertNoteToStarred(note_id: String)
+
+    suspend fun unStarNote(note_id: String)
+
+    suspend fun getFirstStarredId(): Flow<Resource<List<StarredNoteDomain>>>
+
+    suspend fun getNextStarredId(lastVisible: String): Flow<Resource<List<StarredNoteDomain>>>
+
+    suspend fun checkIsNoteStarred(note_id: String): Boolean
+
+    suspend fun updateNoteStarCount(note_id: String, newCount: Int)
 
     // storage
     suspend fun getPdfFile(user_id: String, note_id: String, height: Int, width: Int): List<ImageBitmap>

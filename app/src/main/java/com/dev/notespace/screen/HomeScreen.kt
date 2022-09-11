@@ -26,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.data.Resource
 import com.dev.core.utils.DataMapper
 import com.dev.notespace.component.*
+import com.dev.notespace.helper.Subject
 import com.dev.notespace.state.PagingState
 import com.dev.notespace.viewModel.HomeViewModel
 import com.google.accompanist.flowlayout.FlowRow
@@ -45,13 +47,15 @@ import kotlin.math.roundToInt
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToNoteDetail: (String, String) -> Unit,
-    navigateToSearch: (String) -> Unit
+    navigateToSearch: (String) -> Unit,
+    navigateToStarred: () -> Unit
 ) {
     HomeContent(
         modifier = Modifier,
         viewModel = viewModel,
         navigateToNoteDetail = navigateToNoteDetail,
-        navigateToSearch = navigateToSearch
+        navigateToSearch = navigateToSearch,
+        navigateToStarred = navigateToStarred
     )
 }
 
@@ -60,7 +64,8 @@ private fun HomeContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     navigateToNoteDetail: (String, String) -> Unit,
-    navigateToSearch: (String) -> Unit
+    navigateToSearch: (String) -> Unit,
+    navigateToStarred: () -> Unit
 ) {
     val toolbarHeight = 56.dp
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
@@ -153,7 +158,7 @@ private fun HomeContent(
                 )
             )
 
-            IconButton(onClick = {  }) {
+            IconButton(onClick = navigateToStarred) {
                 Icon(
                     imageVector = Icons.Default.BookmarkBorder,
                     contentDescription = "Saved Note"
@@ -173,7 +178,7 @@ private fun HomeSearchContent(
     val searchedNotes = viewModel.searchedNotes
     val queryNextItem = remember {
         derivedStateOf {
-            viewModel.searchedNotes.isNotEmpty() && state.firstVisibleItemIndex == viewModel.searchedNotes.size && viewModel.searchedNotes.size % 20 == 0
+            viewModel.searchedNotes.isNotEmpty() && state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size && viewModel.searchedNotes.size % 5 == 0
         }
     }
 
@@ -204,7 +209,7 @@ private fun HomeDefaultContent(
     val notes = viewModel.popularNotes.collectAsState()
     val queryNextItem = remember {
         derivedStateOf {
-            viewModel.userNotes.isNotEmpty() && defaultState.firstVisibleItemIndex == viewModel.userNotes.size && viewModel.userNotes.size % 20 == 0
+            viewModel.userNotes.isNotEmpty() && defaultState.firstVisibleItemIndex+1 == viewModel.userNotes.size && viewModel.userNotes.size % 5 == 0
         }
     }
 
@@ -225,24 +230,26 @@ private fun HomeDefaultContent(
                 modifier = Modifier
                     .padding(start = 10.dp, end = 10.dp)
             ) {
-                subject().forEach {
+                Subject.values().forEach {
                     Column(
                         modifier = Modifier
                             .padding(10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
+                        Image(
                             modifier = Modifier
                                 .size(50.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colors.primary)
+                                .background(Color.LightGray)
                                 .clickable {
-                                    navigateToSearch(it)
-                                }
+                                    navigateToSearch(it.name)
+                                },
+                            painter = painterResource(id = it.icon),
+                            contentDescription = it.name
                         )
                         Text(
                             modifier = Modifier.padding(top = 4.dp),
-                            text = it
+                            text = it.name
                         )
                     }
                 }
@@ -372,16 +379,3 @@ private fun HomeDefaultContent(
         }
     }
 }
-
-private fun subject(): List<String> =
-    listOf(
-        "Math",
-        "Biology",
-        "Physics",
-        "Chems",
-        "English",
-        "Bahasa",
-        "Geo",
-        "History",
-        "Other"
-    )

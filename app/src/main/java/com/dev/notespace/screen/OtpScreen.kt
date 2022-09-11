@@ -119,8 +119,8 @@ fun MobileOtpScreen(
                 } else {
                     val credential : PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationId, viewModel.otp.value)
                     viewModel.signInWithCredential(credential)
-                        .addOnCompleteListener {
-                            if(it.isSuccessful) {
+                        .addOnCompleteListener { task ->
+                            if(task.isSuccessful) {
                                 if(user==null) {
                                     navigateToHome()
                                 } else {

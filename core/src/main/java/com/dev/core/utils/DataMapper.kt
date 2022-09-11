@@ -2,10 +2,13 @@ package com.dev.core.utils
 
 import com.dev.core.domain.model.data.request.UserRequest
 import com.dev.core.domain.model.data.response.NoteResponse
+import com.dev.core.domain.model.data.response.StarredResponse
 import com.dev.core.domain.model.data.response.UserResponse
 import com.dev.core.domain.model.domain.NoteDomain
+import com.dev.core.domain.model.domain.StarredNoteDomain
 import com.dev.core.domain.model.domain.UserDomain
 import com.dev.core.domain.model.presenter.Note
+import com.dev.core.domain.model.presenter.StarredNote
 import com.dev.core.domain.model.presenter.User
 
 object DataMapper {
@@ -94,4 +97,33 @@ object DataMapper {
             user_id = input.user_id,
             preview = input.preview
         )
+
+    // star a note related
+    fun mapStarredNoteResponseToDomain(input: StarredResponse): StarredNoteDomain =
+        StarredNoteDomain(
+            user_id = input.user_id,
+            note_id = input.note_id
+        )
+
+    fun mapStarredNoteResponsesToDomain(input: List<StarredResponse>): List<StarredNoteDomain> =
+        input.map {
+            StarredNoteDomain(
+                user_id = it.user_id,
+                note_id = it.note_id
+            )
+        }
+
+    fun mapStarredNoteDomainToPresenter(input: StarredNoteDomain): StarredNote =
+        StarredNote(
+            user_id = input.user_id,
+            note_id = input.note_id
+        )
+
+    fun mapStarredNotesDomainToPresenter(input: List<StarredNoteDomain>): List<StarredNote> =
+        input.map {
+            StarredNote(
+                user_id = it.user_id,
+                note_id = it.note_id
+            )
+        }
 }

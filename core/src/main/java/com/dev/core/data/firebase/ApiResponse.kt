@@ -1,4 +1,4 @@
-package com.dev.core.data.remote.source
+package com.dev.core.data.firebase
 
 sealed class ApiResponse<out R> {
     data class Success<out T>(val data: T) : ApiResponse<T>()

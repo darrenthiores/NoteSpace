@@ -2,6 +2,7 @@ package com.dev.notespace.viewModel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.core.data.Resource
@@ -28,7 +29,7 @@ class SearchViewModel @Inject constructor(
         private set
 
     private val _defaultNotes = mutableStateListOf<Note>()
-    val defaultNotes: List<Note>
+    val defaultNotes: SnapshotStateList<Note>
         get() = _defaultNotes
 
     fun getFirstDefaultNotes(subject: String) = viewModelScope.launch {
@@ -75,7 +76,7 @@ class SearchViewModel @Inject constructor(
         private set
 
     private val _searchedNotes = mutableStateListOf<Note>()
-    val searchedNotes: List<Note>
+    val searchedNotes: SnapshotStateList<Note>
         get() = _searchedNotes
 
     fun searchNotes() = viewModelScope.launch {

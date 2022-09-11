@@ -65,17 +65,36 @@ fun SearchScreen(
         }
     }
 
+    val defaultListState = rememberLazyGridState()
+    val searchListState = rememberLazyGridState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
     ) {
-        SearchContent(
-            modifier = Modifier,
-            viewModel = viewModel,
-            subject = subject,
-            navigateToNoteDetail = navigateToNoteDetail
-        )
+        val enteredTextEmpty by remember {
+            derivedStateOf {
+                viewModel.searchText.enteredText.isEmpty()
+            }
+        }
+
+        if(enteredTextEmpty) {
+            SearchContentDefault(
+                modifier = Modifier,
+                viewModel = viewModel,
+                subject = subject,
+                navigateToNoteDetail = navigateToNoteDetail,
+                state = defaultListState
+            )
+        } else {
+            SearchContentOnSearch(
+                modifier = Modifier,
+                viewModel = viewModel,
+                navigateToNoteDetail = navigateToNoteDetail,
+                state = searchListState
+            )
+        }
 
         Row(
             modifier = Modifier
@@ -132,42 +151,62 @@ fun SearchScreen(
 }
 
 @Composable
-private fun SearchContent(
+private fun SearchContentDefault(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel,
     subject: String,
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String) -> Unit,
+    state: LazyGridState
 ) {
-    val enteredTextEmpty by remember {
-        derivedStateOf {
-            viewModel.searchText.enteredText.isEmpty()
-        }
-    }
-
-    val defaultListState = rememberLazyGridState()
-    val searchListState = rememberLazyGridState()
-    val state: LazyGridState = if(enteredTextEmpty) defaultListState else searchListState
-
-    val notes = if(enteredTextEmpty) viewModel.defaultNotes else viewModel.searchedNotes
-
     val queryNextItem = remember {
         derivedStateOf {
-            notes.isNotEmpty() &&
-            state.firstVisibleItemIndex == notes.size &&
-            notes.size % 20 == 0
+            viewModel.defaultNotes.isNotEmpty() &&
+            state.firstVisibleItemIndex+1 == viewModel.defaultNotes.size &&
+            viewModel.defaultNotes.size % 5 == 0
         }
     }
 
     LaunchedEffect(queryNextItem.value) {
         if(queryNextItem.value) {
-            if(enteredTextEmpty) viewModel.defaultNextNote(subject) else viewModel.searchNextNote()
+            viewModel.defaultNextNote(subject)
         }
     }
 
     SearchList(
         modifier = modifier
             .padding(horizontal = 16.dp),
-        searchedNotes = notes,
+        searchedNotes = viewModel.defaultNotes,
+        navigateToNoteDetail = navigateToNoteDetail,
+        state = state,
+        searchPagingState = viewModel.defaultPagingState
+    )
+}
+
+@Composable
+private fun SearchContentOnSearch(
+    modifier: Modifier = Modifier,
+    viewModel: SearchViewModel,
+    navigateToNoteDetail: (String, String) -> Unit,
+    state: LazyGridState
+) {
+    val queryNextItem = remember {
+        derivedStateOf {
+            viewModel.searchedNotes.isNotEmpty() &&
+            state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size &&
+            viewModel.searchedNotes.size % 5 == 0
+        }
+    }
+
+    LaunchedEffect(queryNextItem.value) {
+        if(queryNextItem.value) {
+            viewModel.searchNextNote()
+        }
+    }
+
+    SearchList(
+        modifier = modifier
+            .padding(horizontal = 16.dp),
+        searchedNotes = viewModel.searchedNotes,
         navigateToNoteDetail = navigateToNoteDetail,
         state = state,
         searchPagingState = viewModel.searchPagingState

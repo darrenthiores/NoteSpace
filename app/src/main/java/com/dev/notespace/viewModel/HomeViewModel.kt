@@ -2,6 +2,7 @@ package com.dev.notespace.viewModel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,7 +34,7 @@ class HomeViewModel @Inject constructor(
         private set
 
     private val _userNotes = mutableStateListOf<Note>()
-    val userNotes: List<Note>
+    val userNotes: SnapshotStateList<Note>
         get() = _userNotes
 
     fun userNextNote() = viewModelScope.launch {
@@ -85,7 +86,7 @@ class HomeViewModel @Inject constructor(
         private set
 
     private val _searchedNotes = mutableStateListOf<Note>()
-    val searchedNotes: List<Note>
+    val searchedNotes: SnapshotStateList<Note>
         get() = _searchedNotes
 
     fun searchNotes() = viewModelScope.launch {
