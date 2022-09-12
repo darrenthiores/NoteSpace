@@ -58,7 +58,8 @@ fun RegisterScreen(
                     viewModel.identifierHolder.value,
                     viewModel.educationHolder.value,
                     viewModel.majorHolder.value,
-                    viewModel.interestsHolder.value.subList(0, viewModel.interestsHolder.value.size).toList()
+                    viewModel.interestsHolder.value.subList(0, viewModel.interestsHolder.value.size).toList(),
+                    0
                 )
             )
         }

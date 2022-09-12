@@ -111,8 +111,11 @@ class NoteSpaceInteractor @Inject constructor(
     override suspend fun checkIsNoteStarred(note_id: String): Boolean =
         repository.checkIsNoteStarred(note_id)
 
-    override suspend fun updateNoteStarCount(note_id: String, newCount: Int) =
-        repository.updateNoteStarCount(note_id, newCount)
+    override suspend fun updateNoteStarCount(note_id: String, addition: Long) =
+        repository.updateNoteStarCount(note_id, addition)
+
+    override suspend fun updateUserStarCount(user_id: String, addition: Long) =
+        repository.updateUserStarCount(user_id, addition)
 
     override suspend fun getPdfFile(
         user_id: String, note_id: String, height: Int, width: Int

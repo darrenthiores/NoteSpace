@@ -57,15 +57,20 @@ class NoteDetailViewModel @Inject constructor(
         useCase.unStarNote(note_id)
     }
 
-    var currentStar by mutableStateOf<Int?>(null)
+    var currentStar by mutableStateOf<Long?>(null)
     private set
 
-    fun setStar(star: Int) {
+    fun setStar(star: Long) {
         currentStar = star
     }
 
-    fun updateNoteCount(note_id: String, newCount: Int) = viewModelScope.launch {
-        useCase.updateNoteStarCount(note_id, (currentStar!! + newCount))
-        currentStar = currentStar!! + newCount
+    fun updateNoteCount(
+        user_id: String,
+        note_id: String,
+        addition: Long
+    ) = viewModelScope.launch {
+        useCase.updateNoteStarCount(note_id, addition)
+        useCase.updateUserStarCount(user_id, addition)
+        currentStar = currentStar!! + addition
     }
 }

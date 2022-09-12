@@ -5,5 +5,6 @@ data class UserDomain(
     val mobile: String,
     val education: String,
     val major: String,
-    val interests: List<String>
+    val interests: List<String>,
+    val totalStar: Int
 )

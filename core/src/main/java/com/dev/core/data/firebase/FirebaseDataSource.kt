@@ -10,10 +10,7 @@ import com.dev.core.domain.model.data.response.NoteResponse
 import com.dev.core.domain.model.data.response.StarredResponse
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
@@ -120,7 +117,7 @@ class FirebaseDataSource {
         val listenerRegistration = noteCollection
             .whereIn("name", listOf(searchText))
             .orderBy("note_id", Query.Direction.DESCENDING)
-            .limit(20)
+            .limit(10)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -148,7 +145,7 @@ class FirebaseDataSource {
             .whereIn("name", listOf(searchText))
             .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
-            .limit(5)
+            .limit(10)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -230,7 +227,7 @@ class FirebaseDataSource {
         val listenerRegistration = noteCollection
             .whereIn("subject", listOf(subject))
             .orderBy("note_id", Query.Direction.DESCENDING)
-            .limit(20)
+            .limit(10)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -258,7 +255,7 @@ class FirebaseDataSource {
             .whereIn("subject", listOf(subject))
             .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
-            .limit(20)
+            .limit(10)
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     trySend(ApiResponse.Error(error.message.toString()))
@@ -361,12 +358,23 @@ class FirebaseDataSource {
             .await()
             .isEmpty
 
-    suspend fun updateNoteCount(note_id: String, newCount: Int) {
+    suspend fun updateNoteCount(note_id: String, addition: Long) {
         noteCollection
             .document(note_id)
             .update(
                 mapOf(
-                    "star" to newCount
+                    "star" to FieldValue.increment(addition)
+                )
+            )
+            .await()
+    }
+
+    suspend fun updateUserCount(user_id: String, addition: Long) {
+        userCollection
+            .document(user_id)
+            .update(
+                mapOf(
+                    "total_star" to FieldValue.increment(addition)
                 )
             )
             .await()

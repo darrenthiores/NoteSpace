@@ -19,7 +19,8 @@ object DataMapper {
             mobile = input.mobile,
             education = input.education,
             major = input.major,
-            interests = input.interests
+            interests = input.interests,
+            totalStar = input.total_star
         )
 
     fun mapUserDomainToPresenter(input: UserDomain): User =
@@ -28,7 +29,8 @@ object DataMapper {
             mobile = input.mobile,
             education = input.education,
             major = input.major,
-            interests = input.interests
+            interests = input.interests,
+            totalStar = input.totalStar
         )
 
     fun mapUserPresenterToDomain(input: User): UserDomain =
@@ -37,7 +39,8 @@ object DataMapper {
             mobile = input.mobile,
             education = input.education,
             major = input.major,
-            interests = input.interests
+            interests = input.interests,
+            totalStar = input.totalStar
         )
 
     fun mapUserDomainToRequest(input: UserDomain): UserRequest =

@@ -45,10 +45,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.textInputServiceFactory
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.notespace.R
+import com.dev.notespace.viewModel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(){
+fun ProfileScreen(
+    viewModel: ProfileViewModel = hiltViewModel()
+){
     val painter2 = painterResource(id = R.drawable.oxfordblue)
     val description2 = "Profile"
     val title2 = "Profile"
@@ -60,7 +64,10 @@ fun ProfileScreen(){
             LongCard(
                 painter = painter2,
                 contentDescription = description2,
-                title = title2
+                title = title2,
+                name = viewModel.user.value?.name ?: "null",
+                total_star = viewModel.user.value?.totalStar ?: 0,
+                status = "${viewModel.user.value?.education} - ${viewModel.user.value?.major}"
             )
 
         }
@@ -83,7 +90,7 @@ fun ProfileScreen(){
                 Spacer(modifier = Modifier.height(13.dp))
 
                 val mobile = painterResource(R.drawable.phonenum)
-                IconCard(app= "Mobile", msg = "0812 7821 2374", painter = mobile)
+                IconCard(app= "Mobile", msg = viewModel.user.value?.mobile ?: "null", painter = mobile)
 
                 Spacer(modifier = Modifier.height(13.dp))
                 Divider(modifier = Modifier
@@ -160,6 +167,9 @@ fun LongCard(
     painter: Painter,
     contentDescription: String,
     title: String,
+    name: String,
+    status: String,
+    total_star: Int,
     modifier: Modifier = Modifier
 ){
     Card(
@@ -197,7 +207,10 @@ fun LongCard(
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                MessageCard(msg = "Test Nama User")
+                MessageCard(
+                    name = name,
+                    status = status
+                )
             }
 
             Box(
@@ -205,7 +218,7 @@ fun LongCard(
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Text(
-                    text = "⭐ 1000      |     Level 100\n\n",
+                    text = "⭐ $total_star      |     Level 100\n\n",
                     style = androidx.compose.ui.text.TextStyle(
                         color = Color.LightGray,
                         fontSize = 22.sp,
@@ -223,7 +236,10 @@ fun LongCard(
 }
 
 @Composable
-fun MessageCard(msg: String) {
+fun MessageCard(
+    name: String,
+    status: String
+) {
     // Add padding around our message
     Column(
         modifier = Modifier
@@ -239,7 +255,6 @@ fun MessageCard(msg: String) {
                 // Clip image to be shaped as a circle
                 .clip(CircleShape)
                 .border(4.dp, Color.White, CircleShape)
-
         )
 
         // Add a horizontal space between the image and the column
@@ -252,7 +267,7 @@ fun MessageCard(msg: String) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = msg,
+                    text = name,
                     style = androidx.compose.ui.text.TextStyle(
                         color = Color(0xFFE5FAFC),
                         fontSize = 20.sp
@@ -262,7 +277,7 @@ fun MessageCard(msg: String) {
                 )
 
                 Text(
-                    text = "Math Teacher",
+                    text = status,
                     style = androidx.compose.ui.text.TextStyle(
                         color = Color.LightGray,
                         fontSize = 16.sp,

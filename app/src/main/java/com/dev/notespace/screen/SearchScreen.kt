@@ -162,7 +162,7 @@ private fun SearchContentDefault(
         derivedStateOf {
             viewModel.defaultNotes.isNotEmpty() &&
             state.firstVisibleItemIndex+1 == viewModel.defaultNotes.size &&
-            viewModel.defaultNotes.size % 5 == 0
+            viewModel.defaultNotes.size % 10 == 0
         }
     }
 
@@ -193,7 +193,7 @@ private fun SearchContentOnSearch(
         derivedStateOf {
             viewModel.searchedNotes.isNotEmpty() &&
             state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size &&
-            viewModel.searchedNotes.size % 5 == 0
+            viewModel.searchedNotes.size % 10 == 0
         }
     }
 

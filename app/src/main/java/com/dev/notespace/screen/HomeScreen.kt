@@ -178,7 +178,7 @@ private fun HomeSearchContent(
     val searchedNotes = viewModel.searchedNotes
     val queryNextItem = remember {
         derivedStateOf {
-            viewModel.searchedNotes.isNotEmpty() && state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size && viewModel.searchedNotes.size % 5 == 0
+            viewModel.searchedNotes.isNotEmpty() && state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size && viewModel.searchedNotes.size % 10 == 0
         }
     }
 

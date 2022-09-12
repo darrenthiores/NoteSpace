@@ -12,5 +12,7 @@ data class UserRequest(
     @PropertyName("major")
     val major: String,
     @PropertyName("interests")
-    val interests: List<String>
+    val interests: List<String>,
+    @PropertyName("total_star")
+    val total_star: Int = 0
 )

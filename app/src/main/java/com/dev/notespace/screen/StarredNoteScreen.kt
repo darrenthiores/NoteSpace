@@ -60,6 +60,20 @@ private fun StarredNoteContent(
     state: LazyListState,
     navigateToNoteDetail: (String, String) -> Unit
 ) {
+    val queryNextItem = remember {
+        derivedStateOf {
+            viewModel.starredNotes.isNotEmpty() &&
+            state.firstVisibleItemIndex+1 == viewModel.starredNotes.size &&
+            viewModel.starredNotes.size % 10 == 0
+        }
+    }
+
+    LaunchedEffect(queryNextItem.value) {
+        if(queryNextItem.value) {
+            viewModel.userNextStarredNote()
+        }
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),

@@ -12,5 +12,7 @@ data class UserResponse(
     @PropertyName("major")
     val major: String = "",
     @PropertyName("interests")
-    val interests: List<String> = emptyList()
+    val interests: List<String> = emptyList(),
+    @PropertyName("total_star")
+    val total_star: Int = 0
 )

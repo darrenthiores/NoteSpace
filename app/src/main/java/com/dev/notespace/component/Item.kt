@@ -39,63 +39,58 @@ fun NoteItem(
     ) {
         Column(
             modifier = Modifier
+                .width(180.dp)
+                .height(160.dp)
         ) {
-            Box(
+            Image(
+                painter = rememberAsyncImagePainter(preview),
+                contentDescription = null,
                 modifier = Modifier
                     .width(180.dp)
                     .height(100.dp)
-            ){
-                Image(
-                    painter = rememberAsyncImagePainter(preview),
-                    contentDescription = null,
+                    .background(Color.LightGray),
+                contentScale = ContentScale.Crop
+            )
+            Row(
+                modifier = Modifier
+                    .padding(top = 8.dp, start = 4.dp)
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                Column(
                     modifier = Modifier
-                        .width(180.dp)
-                        .height(120.dp)
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop
-                )
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(36.dp)
-                        .align(Alignment.TopEnd)
-                        .clip(CircleShape)
-                        .background(Color.LightGray)
+                        .weight(1f)
                 ) {
-                    Column(
+                    Text(
+                        text = name,
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.subtitle1.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                    Text(
+                        text = subject,
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.caption
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star(s)",
+                        tint = Color.Yellow,
                         modifier = Modifier
-                            .align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Star(s)",
-                            tint = Color.Yellow,
-                            modifier = Modifier
-                                .size(20.dp)
-                        )
-                        Text(
-                            text = star.toString(),
-                            modifier = Modifier.padding(top = 1.dp),
-                            style = MaterialTheme.typography.caption
-                        )
-                    }
+                            .size(20.dp)
+                    )
+                    Text(
+                        text = star.toString(),
+                        modifier = Modifier.padding(start = 2.dp, end = 4.dp),
+                        style = MaterialTheme.typography.caption
+                    )
                 }
             }
-            Text(
-                text = name,
-                modifier = Modifier
-                    .padding(top = 8.dp, start = 4.dp),
-                style = MaterialTheme.typography.subtitle1.copy(
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-            Text(
-                text = subject,
-                modifier = Modifier
-                    .padding(start = 4.dp),
-                style = MaterialTheme.typography.caption
-            )
         }
     }
 }
@@ -151,19 +146,9 @@ fun UserNoteItem(
                     modifier = Modifier,
                     style = MaterialTheme.typography.caption
                 )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
@@ -174,11 +159,38 @@ fun UserNoteItem(
                     )
                     Text(
                         text = star.toString(),
-                        modifier = Modifier.padding(top = 1.dp),
+                        modifier = Modifier.padding(start = 2.dp),
                         style = MaterialTheme.typography.caption
                     )
                 }
             }
+
+//            Box(
+//                modifier = Modifier
+//                    .padding(4.dp)
+//                    .size(36.dp)
+//                    .clip(CircleShape)
+//                    .background(Color.LightGray)
+//            ) {
+//                Column(
+//                    modifier = Modifier
+//                        .align(Alignment.Center),
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.Star,
+//                        contentDescription = "Star(s)",
+//                        tint = Color.Yellow,
+//                        modifier = Modifier
+//                            .size(20.dp)
+//                    )
+//                    Text(
+//                        text = star.toString(),
+//                        modifier = Modifier.padding(top = 1.dp),
+//                        style = MaterialTheme.typography.caption
+//                    )
+//                }
+//            }
         }
     }
 }
@@ -201,60 +213,97 @@ fun SearchNoteItem(
         Column(
             modifier = Modifier
         ) {
-            Box(
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(180.dp)
+//            ){
+//                Image(
+//                    painter = rememberAsyncImagePainter(preview),
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(180.dp)
+//                        .background(Color.LightGray),
+//                    contentScale = ContentScale.Crop
+//                )
+//                Box(
+//                    modifier = Modifier
+//                        .padding(4.dp)
+//                        .size(36.dp)
+//                        .align(Alignment.TopEnd)
+//                        .clip(CircleShape)
+//                        .background(Color.LightGray)
+//                ) {
+//                    Column(
+//                        modifier = Modifier
+//                            .align(Alignment.Center),
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.Star,
+//                            contentDescription = "Star(s)",
+//                            tint = Color.Yellow,
+//                            modifier = Modifier
+//                                .size(20.dp)
+//                        )
+//                        Text(
+//                            text = star.toString(),
+//                            modifier = Modifier.padding(top = 1.dp),
+//                            style = MaterialTheme.typography.caption
+//                        )
+//                    }
+//                }
+//            }
+            Image(
+                painter = rememberAsyncImagePainter(preview),
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
-            ){
-                Image(
-                    painter = rememberAsyncImagePainter(preview),
-                    contentDescription = null,
+                    .background(Color.LightGray),
+                contentScale = ContentScale.Crop
+            )
+            Row(
+                modifier = Modifier
+                    .padding(top = 8.dp, start = 4.dp)
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop
-                )
-                Box(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(36.dp)
-                        .align(Alignment.TopEnd)
-                        .clip(CircleShape)
-                        .background(Color.LightGray)
+                        .weight(1f)
                 ) {
-                    Column(
+                    Text(
+                        text = name,
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.subtitle1.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                    Text(
+                        text = subject,
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.caption
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star(s)",
+                        tint = Color.Yellow,
                         modifier = Modifier
-                            .align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Star(s)",
-                            tint = Color.Yellow,
-                            modifier = Modifier
-                                .size(20.dp)
-                        )
-                        Text(
-                            text = star.toString(),
-                            modifier = Modifier.padding(top = 1.dp),
-                            style = MaterialTheme.typography.caption
-                        )
-                    }
+                            .size(20.dp)
+                    )
+                    Text(
+                        text = star.toString(),
+                        modifier = Modifier.padding(start = 2.dp, end = 4.dp),
+                        style = MaterialTheme.typography.caption
+                    )
                 }
             }
-            Text(
-                text = name,
-                modifier = Modifier
-                    .padding(top = 4.dp, start = 4.dp),
-                style = MaterialTheme.typography.subtitle1
-            )
-            Text(
-                text = subject,
-                modifier = Modifier
-                    .padding(start = 4.dp),
-                style = MaterialTheme.typography.caption
-            )
         }
     }
 }

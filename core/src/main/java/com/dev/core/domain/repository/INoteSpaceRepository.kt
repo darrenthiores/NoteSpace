@@ -71,7 +71,9 @@ interface INoteSpaceRepository {
 
     suspend fun checkIsNoteStarred(note_id: String): Boolean
 
-    suspend fun updateNoteStarCount(note_id: String, newCount: Int)
+    suspend fun updateNoteStarCount(note_id: String, addition: Long)
+
+    suspend fun updateUserStarCount(user_id: String, addition: Long)
 
     // storage
     suspend fun getPdfFile(user_id: String, note_id: String, height: Int, width: Int): List<ImageBitmap>

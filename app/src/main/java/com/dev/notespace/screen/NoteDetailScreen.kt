@@ -65,10 +65,10 @@ fun NoteDetailScreen(
                         if(viewModel.currentStar != null) {
                             if(isNoteStarred.value) {
                                 viewModel.unStarNote(note_id)
-                                viewModel.updateNoteCount(note_id, -1)
+                                viewModel.updateNoteCount(user_id, note_id, -1L)
                             } else {
                                 viewModel.starNote(note_id)
-                                viewModel.updateNoteCount(note_id, 1)
+                                viewModel.updateNoteCount(user_id, note_id, 1L)
                             }
 
                             isNoteStarred.value = !isNoteStarred.value
@@ -126,8 +126,8 @@ private fun ColumnScope.NoteItem(
     modifier: Modifier = Modifier,
     note: State<Resource<NoteDomain>>,
     previews: List<ImageBitmap?>,
-    starCount: Int?,
-    updateCurrentStar: (Int) -> Unit
+    starCount: Long?,
+    updateCurrentStar: (Long) -> Unit
 ) {
     when(note.value) {
         is Resource.Loading -> {
@@ -140,7 +140,7 @@ private fun ColumnScope.NoteItem(
             val data = DataMapper.mapNoteDomainToPresenter(note.value.data!!)
 
             LaunchedEffect(true) {
-                updateCurrentStar(data.star)
+                updateCurrentStar(data.star.toLong())
             }
 
             PdfCarousel(

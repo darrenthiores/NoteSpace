@@ -325,8 +325,11 @@ class NoteSpaceRepository @Inject constructor(
     override suspend fun checkIsNoteStarred(note_id: String): Boolean =
         fbDataSource.checkIsNoteStarred(note_id)
 
-    override suspend fun updateNoteStarCount(note_id: String, newCount: Int) =
-        fbDataSource.updateNoteCount(note_id, newCount)
+    override suspend fun updateNoteStarCount(note_id: String, addition: Long) =
+        fbDataSource.updateNoteCount(note_id, addition)
+
+    override suspend fun updateUserStarCount(user_id: String, addition: Long) =
+        fbDataSource.updateUserCount(user_id, addition)
 
     override suspend fun getPdfFile(
         user_id: String,
