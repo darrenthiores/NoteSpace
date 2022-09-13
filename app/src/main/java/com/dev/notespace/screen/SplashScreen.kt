@@ -4,6 +4,7 @@ import android.window.SplashScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +15,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.notespace.R
@@ -45,10 +47,11 @@ fun SplashScreen(
         }
 
         Image(
-            painterResource(id = R.drawable.auth_screens_background),
+            painterResource(id = R.drawable.notespace_logo),
             contentDescription = null,
             modifier = Modifier
-                .fillMaxSize(),
+                .size(250.dp)
+                .align(Alignment.Center),
             contentScale = ContentScale.Crop
         )
     }

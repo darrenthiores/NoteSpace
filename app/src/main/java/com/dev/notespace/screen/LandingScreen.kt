@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,8 +33,7 @@ fun LandingScreen(
     val contentDescription = "test gif"
 
     Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFFEAEBED)),
+        .fillMaxSize(),
         contentAlignment = Alignment.Center
     ){
         Box(modifier = Modifier
@@ -57,7 +57,7 @@ fun LandingScreen(
                 text = buildAnnotatedString {
                     withStyle(
                         style = SpanStyle(
-                            color = Color(0xFF6E5DCF),
+                            color = MaterialTheme.colors.primary,
                             fontSize = 35.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -67,7 +67,7 @@ fun LandingScreen(
 
                     withStyle(
                         style = SpanStyle(
-                            color = Color(0xFF243B67),
+                            color = MaterialTheme.colors.onSurface,
                             fontSize = 14.sp
                         )
                     ) {
@@ -103,7 +103,7 @@ fun LandingButton(
             pressedElevation = 15.dp,
             disabledElevation = 0.dp),
         shape = RoundedCornerShape(50.dp),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF6E5DCF)),
+        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
         modifier = Modifier
             .height(55.dp)
             .width(210.dp)

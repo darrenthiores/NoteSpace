@@ -113,8 +113,7 @@ private fun NoteSpaceNavHost(
 ) {
     NavHost(
         navController = navController,
-//        startDestination = NoteSpaceScreen.Splash.name,
-        startDestination = NoteSpaceNavigation.Home.name,
+        startDestination = NoteSpaceScreen.Splash.name,
         modifier = modifier
     ) {
         composable(NoteSpaceScreen.Splash.name) {

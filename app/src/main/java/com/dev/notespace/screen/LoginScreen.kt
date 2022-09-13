@@ -8,12 +8,15 @@ import com.dev.notespace.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.notespace.component.CommonDialog
@@ -113,22 +116,22 @@ private fun LoginContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.notespace_logo),
+            contentDescription = null,
             modifier = Modifier
-                .padding(top = 48.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.auth_screens_background),
-                contentDescription = null,
-                modifier = Modifier.height(36.dp)
-            )
-        }
+                .size(250.dp),
+            contentScale = ContentScale.Crop
+        )
         Text(
             text = "NOTE SPACE",
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(top = 8.dp),
+            style = MaterialTheme.typography.h6.copy(
+                fontWeight = FontWeight.Bold
+            )
         )
         DigitDataInput(
-            modifier = Modifier.padding(top = 128.dp),
+            modifier = Modifier.padding(top = 64.dp),
             label = "Mobile No",
             textFieldHolder = viewModel.identifierHolder,
             maxLength = 13

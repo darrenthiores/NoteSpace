@@ -1,9 +1,6 @@
 package com.dev.notespace.component
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -65,30 +62,34 @@ fun EducationDropDown(
         mutableStateOf(false)
     }
 
-    BaseDropDown(
+    Column(
         modifier = modifier,
-        expanded = isExpanded,
-        education = textFieldHolder.value,
-        onDropDownClicked = {
-            isExpanded = true
-            textFieldHolder.setTextFieldError(false)
-        },
-        onDismiss = { isExpanded = false },
-        onItemClicked = textFieldHolder::setTextFieldValue,
-        ifEmptyText = "Education",
-        item = educationList()
-    )
-
-    if(textFieldHolder.error) {
-        Text(
-            text = textFieldHolder.errorDescription,
-            color = MaterialTheme.colors.error,
-            style = MaterialTheme.typography.caption,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp),
-            textAlign = TextAlign.Start
+    ) {
+        BaseDropDown(
+            modifier = Modifier,
+            expanded = isExpanded,
+            education = textFieldHolder.value,
+            onDropDownClicked = {
+                isExpanded = true
+                textFieldHolder.setTextFieldError(false)
+            },
+            onDismiss = { isExpanded = false },
+            onItemClicked = textFieldHolder::setTextFieldValue,
+            ifEmptyText = "Education",
+            item = educationList()
         )
+
+        if(textFieldHolder.error) {
+            Text(
+                text = textFieldHolder.errorDescription,
+                color = MaterialTheme.colors.error,
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 1.dp),
+                textAlign = TextAlign.Start
+            )
+        }
     }
 }
 
@@ -101,30 +102,34 @@ fun SubjectDropDown(
         mutableStateOf(false)
     }
 
-    BaseDropDown(
+    Column(
         modifier = modifier,
-        expanded = isExpanded,
-        education = textFieldHolder.value,
-        onDropDownClicked = {
-            isExpanded = true
-            textFieldHolder.setTextFieldError(false)
-        },
-        onDismiss = { isExpanded = false },
-        onItemClicked = textFieldHolder::setTextFieldValue,
-        ifEmptyText = "Subject",
-        item = subject()
-    )
-
-    if (textFieldHolder.error) {
-        Text(
-            text = textFieldHolder.errorDescription,
-            color = MaterialTheme.colors.error,
-            style = MaterialTheme.typography.caption,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp),
-            textAlign = TextAlign.Start
+    ){
+        BaseDropDown(
+            modifier = Modifier,
+            expanded = isExpanded,
+            education = textFieldHolder.value,
+            onDropDownClicked = {
+                isExpanded = true
+                textFieldHolder.setTextFieldError(false)
+            },
+            onDismiss = { isExpanded = false },
+            onItemClicked = textFieldHolder::setTextFieldValue,
+            ifEmptyText = "Subject",
+            item = subject()
         )
+
+        if (textFieldHolder.error) {
+            Text(
+                text = textFieldHolder.errorDescription,
+                color = MaterialTheme.colors.error,
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 1.dp),
+                textAlign = TextAlign.Start
+            )
+        }
     }
 }
 
