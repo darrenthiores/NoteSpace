@@ -24,6 +24,7 @@ import com.dev.notespace.state.PagingState
 @Composable
 fun HomePopularList(
     modifier: Modifier = Modifier,
+    childModifier: Modifier = Modifier,
     notes: List<Note>,
     navigateToNoteDetail: (String, String) -> Unit
 ) {
@@ -42,7 +43,8 @@ fun HomePopularList(
                 star = note.star,
                 name = note.name,
                 subject = note.subject,
-                lastItem = index == notes.size
+                lastItem = index == notes.size,
+                childModifier = childModifier
             )
         }
     }

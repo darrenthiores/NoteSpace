@@ -36,10 +36,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.data.Resource
 import com.dev.core.utils.DataMapper
 import com.dev.notespace.component.*
+import com.dev.notespace.helper.Dummies
 import com.dev.notespace.helper.Subject
 import com.dev.notespace.state.PagingState
 import com.dev.notespace.viewModel.HomeViewModel
 import com.google.accompanist.flowlayout.FlowRow
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.fade
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.placeholder
 import timber.log.Timber
 import kotlin.math.roundToInt
 
@@ -268,6 +273,15 @@ private fun HomeDefaultContent(
             when(notes.value) {
                 is Resource.Loading -> {
                     Timber.d("POPULAR NOTES LOADING")
+                    HomePopularList(
+                        modifier = Modifier,
+                        childModifier = Modifier.placeholder(
+                            visible = true,
+                            highlight = PlaceholderHighlight.fade()
+                        ),
+                        notes = Dummies.dummyNote(),
+                        navigateToNoteDetail = navigateToNoteDetail
+                    )
                 }
                 is Resource.Error -> {
                     Timber.e("POPULAR NOTES ERROR: ${notes.value.message}")
@@ -300,7 +314,24 @@ private fun HomeDefaultContent(
             viewModel.userPagingState.value
         ) {
             PagingState.FirstLoad -> {
-
+                itemsIndexed(
+                    items = Dummies.dummyNote(),
+                    key = { _, note -> note.note_id }
+                ) { index, note ->
+                    UserNoteItem(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
+                        preview = note.preview,
+                        star = note.star,
+                        name = note.name,
+                        subject = note.subject,
+                        firstItem = index == 0,
+                        childModifier = Modifier.placeholder(
+                            visible = true,
+                            highlight = PlaceholderHighlight.fade()
+                        )
+                    )
+                }
             }
             PagingState.FirstLoadError -> {
                 item {

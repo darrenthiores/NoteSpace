@@ -23,6 +23,7 @@ import coil.compose.rememberAsyncImagePainter
 @Composable
 fun NoteItem(
     modifier: Modifier = Modifier,
+    childModifier: Modifier = Modifier,
     preview: String,
     star: Int,
     name: String,
@@ -45,7 +46,7 @@ fun NoteItem(
             Image(
                 painter = rememberAsyncImagePainter(preview),
                 contentDescription = null,
-                modifier = Modifier
+                modifier = childModifier
                     .width(180.dp)
                     .height(100.dp)
                     .background(Color.LightGray),
@@ -63,14 +64,14 @@ fun NoteItem(
                 ) {
                     Text(
                         text = name,
-                        modifier = Modifier,
+                        modifier = childModifier,
                         style = MaterialTheme.typography.subtitle1.copy(
                             fontWeight = FontWeight.SemiBold
                         )
                     )
                     Text(
                         text = subject,
-                        modifier = Modifier,
+                        modifier = childModifier,
                         style = MaterialTheme.typography.caption
                     )
                 }
@@ -81,12 +82,12 @@ fun NoteItem(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Star(s)",
                         tint = Color.Yellow,
-                        modifier = Modifier
+                        modifier = childModifier
                             .size(20.dp)
                     )
                     Text(
                         text = star.toString(),
-                        modifier = Modifier.padding(start = 2.dp, end = 4.dp),
+                        modifier = childModifier.padding(start = 2.dp, end = 4.dp),
                         style = MaterialTheme.typography.caption
                     )
                 }
@@ -98,6 +99,7 @@ fun NoteItem(
 @Composable
 fun UserNoteItem(
     modifier: Modifier = Modifier,
+    childModifier: Modifier = Modifier,
     preview: String,
     star: Int,
     name: String,
@@ -126,7 +128,7 @@ fun UserNoteItem(
             Image(
                 painter = rememberAsyncImagePainter(preview),
                 contentDescription = null,
-                modifier = Modifier
+                modifier = childModifier
                     .size(100.dp)
                     .background(Color.LightGray),
                 contentScale = ContentScale.Crop
@@ -138,12 +140,12 @@ fun UserNoteItem(
             ) {
                 Text(
                     text = name,
-                    modifier = Modifier,
+                    modifier = childModifier,
                     style = MaterialTheme.typography.subtitle1
                 )
                 Text(
                     text = subject,
-                    modifier = Modifier,
+                    modifier = childModifier,
                     style = MaterialTheme.typography.caption
                 )
                 Row(
@@ -154,12 +156,12 @@ fun UserNoteItem(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Star(s)",
                         tint = Color.Yellow,
-                        modifier = Modifier
+                        modifier = childModifier
                             .size(20.dp)
                     )
                     Text(
                         text = star.toString(),
-                        modifier = Modifier.padding(start = 2.dp),
+                        modifier = childModifier.padding(start = 2.dp),
                         style = MaterialTheme.typography.caption
                     )
                 }

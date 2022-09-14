@@ -105,4 +105,7 @@ dependencies {
     api 'com.google.firebase:firebase-firestore-ktx'
     api 'com.google.firebase:firebase-storage-ktx'
 
+    // placeholder
+    implementation "com.google.accompanist:accompanist-placeholder-material:0.24.12-rc"
+
 }

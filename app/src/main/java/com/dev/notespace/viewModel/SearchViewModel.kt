@@ -80,6 +80,7 @@ class SearchViewModel @Inject constructor(
         get() = _searchedNotes
 
     fun searchNotes() = viewModelScope.launch {
+        _searchedNotes.clear()
         useCase.getFirstHomeSearchedNote(searchText.enteredText).collect {
             when(it) {
                 is Resource.Loading -> {
