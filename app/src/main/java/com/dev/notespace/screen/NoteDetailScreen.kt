@@ -1,11 +1,13 @@
 package com.dev.notespace.screen
 
+import android.content.Intent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,6 +28,7 @@ import com.dev.core.domain.model.domain.UserDomain
 import com.dev.core.utils.DataMapper
 import com.dev.notespace.component.MidTitleTopBar
 import com.dev.notespace.component.PdfCarousel
+import com.dev.notespace.navigation.NoteSpaceScreen
 import com.dev.notespace.viewModel.NoteDetailViewModel
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -54,6 +58,7 @@ fun NoteDetailScreen(
     }
 
     val scaffoldState = rememberScaffoldState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -61,6 +66,26 @@ fun NoteDetailScreen(
                 title = "Note Detail",
                 onBackClicked = onBackClicked,
                 endContent = {
+                    IconButton(
+                        onClick = {
+                            val sendIntent: Intent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id"
+                                )
+                                type = "text/plain"
+                            }
+                            val shareIntent = Intent.createChooser(sendIntent, null)
+
+                            context.startActivity(shareIntent)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share Post"
+                        )
+                    }
                     IconButton(onClick = {
                         if(viewModel.currentStar != null) {
                             if(isNoteStarred.value) {

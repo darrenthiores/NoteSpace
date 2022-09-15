@@ -81,8 +81,7 @@ fun MidTitleTopBar(
         Box {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
                     onClick = onBackClicked
@@ -93,6 +92,8 @@ fun MidTitleTopBar(
                         modifier = Modifier.padding(16.dp)
                     )
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 endContent?.let { it() }
             }

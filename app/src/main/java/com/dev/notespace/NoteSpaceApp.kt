@@ -181,7 +181,7 @@ private fun NoteSpaceNavHost(
                 showSnackBar = showSnackBar,
                 navigateToHome = {
                     navController.navigate(NoteSpaceNavigation.Home.name) {
-                        popUpTo(NoteSpaceNavigation.Home.name) {
+                        popUpTo(NoteSpaceRegis.Login.name) {
                             inclusive = true
                         }
                     }
@@ -354,7 +354,7 @@ private fun NoteSpaceNavHost(
                 navigateToAbout = {  },
                 navigateOnLogOut = {
                     navController.navigate(NoteSpaceRegis.Login.name) {
-                        popUpTo(NoteSpaceRegis.Login.name) {
+                        popUpTo(NoteSpaceNavigation.Home.name) {
                             inclusive = true
                         }
                     }
