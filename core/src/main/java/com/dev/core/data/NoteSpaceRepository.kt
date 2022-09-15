@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.toLowerCase
 import com.dev.core.data.dataStore.DataStore
 import com.dev.core.data.firebase.FirebaseDataSource
 import com.dev.core.data.firebase.ApiResponse
@@ -109,7 +110,10 @@ class NoteSpaceRepository @Inject constructor(
         ) {
             val url = fbDataSource.downloadPreview(noteId).await()
             return try {
-                val noteRequest = NoteRequest(noteId, name, description, subject, "", 0, url.toString())
+                val keywords: List<String> = name.mapIndexed { index, _ ->
+                    name.substring(0, index+1).lowercase()
+                }
+                val noteRequest = NoteRequest(noteId, name, description, subject, "", 0, url.toString(), keywords)
                 fbDataSource
                     .insertNote(
                         noteRequest
@@ -132,7 +136,11 @@ class NoteSpaceRepository @Inject constructor(
     override suspend fun getNoteById(note_id: String): Resource<NoteDomain> =
         try {
             val data = fbDataSource.getNoteById(note_id).await().toObject(NoteResponse::class.java)
-            Resource.Success(DataMapper.mapNoteResponseToDomain(data!!))
+            if(data?.status == 1) {
+                Resource.Success(DataMapper.mapNoteResponseToDomain(data))
+            } else {
+                Resource.Error("Status: 0 or null")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message.toString())
         }
@@ -161,7 +169,7 @@ class NoteSpaceRepository @Inject constructor(
     override fun getFirstHomeSearchedNote(searchText: String): Flow<Resource<List<NoteDomain>>> = flow {
         emit(Resource.Loading())
         when(
-            val apiResponse = fbDataSource.getFirstHomeSearchedNote(searchText = searchText).first()
+            val apiResponse = fbDataSource.getFirstHomeSearchedNote(searchText = searchText.lowercase()).first()
         ) {
             is ApiResponse.Error -> {
                 emit(Resource.Error(apiResponse.errorMessage))
@@ -183,7 +191,7 @@ class NoteSpaceRepository @Inject constructor(
     ): Flow<Resource<List<NoteDomain>>> = flow {
         emit(Resource.Loading())
         when(
-            val apiResponse = fbDataSource.getNextHomeSearchedNote(searchText, lastVisible).first()
+            val apiResponse = fbDataSource.getNextHomeSearchedNote(searchText.lowercase(), lastVisible).first()
         ) {
             is ApiResponse.Error -> {
                 emit(Resource.Error(apiResponse.errorMessage))
@@ -330,6 +338,45 @@ class NoteSpaceRepository @Inject constructor(
 
     override suspend fun updateUserStarCount(user_id: String, addition: Long) =
         fbDataSource.updateUserCount(user_id, addition)
+
+    override suspend fun deleteNote(note_id: String) =
+        fbDataSource.deleteNote(note_id)
+
+    override suspend fun updateNote(
+        note_id: String,
+        new_preview: Uri?,
+        preview: String,
+        name: String,
+        description: String,
+        subject: String,
+        version: Int
+    ) {
+        val keywords: List<String> = name.mapIndexed { index, _ ->
+            name.substring(0, index+1).lowercase()
+        }
+        if(new_preview!=null) {
+            val noteId = "$note_id-${version+1}"
+            val uploadFile = fbDataSource
+                .insertPdfFile(noteId, new_preview)
+                .await()
+
+            if(uploadFile.task.isSuccessful) {
+                val url = fbDataSource.downloadPreview(note_id).await()
+                fbDataSource.updateNote(note_id, url.toString(), name, description, subject, keywords,version+1)
+            } else {
+                Timber.e("ERROR: ${uploadFile.error}")
+            }
+        } else {
+            fbDataSource.updateNote(note_id, preview, name, description, subject, keywords, version+1)
+        }
+    }
+
+    override suspend fun updateUser(
+        name: String,
+        interests: List<String>,
+        education: String,
+        major: String
+    ) = fbDataSource.updateUser(name, interests, education, major)
 
     override suspend fun getPdfFile(
         user_id: String,

@@ -161,8 +161,8 @@ private fun SearchContentDefault(
     val queryNextItem = remember {
         derivedStateOf {
             viewModel.defaultNotes.isNotEmpty() &&
-            state.firstVisibleItemIndex+1 == viewModel.defaultNotes.size &&
-            viewModel.defaultNotes.size % 10 == 0
+            viewModel.defaultNotes.size % 10 == 0 &&
+            state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == viewModel.defaultNotes.size - 1
         }
     }
 
@@ -192,8 +192,8 @@ private fun SearchContentOnSearch(
     val queryNextItem = remember {
         derivedStateOf {
             viewModel.searchedNotes.isNotEmpty() &&
-            state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size &&
-            viewModel.searchedNotes.size % 10 == 0
+            viewModel.searchedNotes.size % 10 == 0 &&
+            state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == viewModel.searchedNotes.size - 1
         }
     }
 

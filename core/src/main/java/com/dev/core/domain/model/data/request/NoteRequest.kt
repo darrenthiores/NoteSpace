@@ -16,5 +16,11 @@ data class NoteRequest(
     @PropertyName("star")
     val star: Int = 0,
     @PropertyName("preview")
-    val preview: String
+    val preview: String,
+    @PropertyName("keywords")
+    val keywords: List<String>,
+    @PropertyName("status")
+    val status: Int = 1,
+    @PropertyName("version")
+    val version: Int = 0
 )

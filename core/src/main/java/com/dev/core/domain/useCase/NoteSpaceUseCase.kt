@@ -75,6 +75,27 @@ interface NoteSpaceUseCase {
 
     suspend fun updateUserStarCount(user_id: String, addition: Long)
 
+    // note manipulation
+    suspend fun deleteNote(note_id: String)
+
+    suspend fun updateNote(
+        note_id: String,
+        new_preview: Uri?,
+        preview: String,
+        name: String,
+        description: String,
+        subject: String,
+        version: Int
+    )
+
+    // user manipulation
+    suspend fun updateUser(
+        name: String,
+        interests: List<String>,
+        education: String,
+        major: String
+    )
+
     // storage
     suspend fun getPdfFile(user_id: String, note_id: String, height: Int, width: Int): List<ImageBitmap>
 

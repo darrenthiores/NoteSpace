@@ -5,5 +5,8 @@ enum class NoteSpaceScreen {
     Landing,
     NoteDetail,
     Search,
-    Starred
+    Starred,
+    EditNote,
+    ProfileSetting,
+    EditProfile
 }

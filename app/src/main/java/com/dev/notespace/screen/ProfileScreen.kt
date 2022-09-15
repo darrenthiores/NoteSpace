@@ -42,6 +42,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.textInputServiceFactory
 import androidx.compose.ui.unit.dp
@@ -51,7 +53,8 @@ import com.dev.notespace.viewModel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onSettingClicked: () -> Unit
 ){
     val painter2 = painterResource(id = R.drawable.oxfordblue)
     val description2 = "Profile"
@@ -70,6 +73,24 @@ fun ProfileScreen(
                 status = "${viewModel.user.value?.education} - ${viewModel.user.value?.major}"
             )
 
+            Surface(
+                elevation = 1.dp,
+                shape = CircleShape,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(36.dp)
+                    .align(Alignment.TopEnd)
+                    .clickable {
+                        onSettingClicked()
+                    }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreHoriz,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .padding(6.dp)
+                )
+            }
         }
 
         Box(

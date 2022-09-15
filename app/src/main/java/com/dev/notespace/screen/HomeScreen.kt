@@ -1,6 +1,8 @@
 package com.dev.notespace.screen
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.*
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -24,9 +27,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -34,10 +37,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.core.data.Resource
+import com.dev.core.domain.model.presenter.Note
 import com.dev.core.utils.DataMapper
 import com.dev.notespace.component.*
 import com.dev.notespace.helper.Dummies
 import com.dev.notespace.helper.Subject
+import com.dev.notespace.navigation.NoteSpaceScreen
 import com.dev.notespace.state.PagingState
 import com.dev.notespace.viewModel.HomeViewModel
 import com.google.accompanist.flowlayout.FlowRow
@@ -45,32 +50,141 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.placeholder
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.math.roundToInt
 
 @Composable
+@ExperimentalMaterialApi
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToNoteDetail: (String, String) -> Unit,
     navigateToSearch: (String) -> Unit,
-    navigateToStarred: () -> Unit
+    navigateToStarred: () -> Unit,
+    navigateToUpdateNote: (String, String) -> Unit,
+    showSnackBar: (String) -> Unit
 ) {
-    HomeContent(
-        modifier = Modifier,
-        viewModel = viewModel,
-        navigateToNoteDetail = navigateToNoteDetail,
-        navigateToSearch = navigateToSearch,
-        navigateToStarred = navigateToStarred
+    val userListState = rememberLazyListState()
+    val searchListState = rememberLazyGridState()
+
+    val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = sheetState
     )
+    val coroutineScope = rememberCoroutineScope()
+
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetContent = {
+            val context = LocalContext.current
+            val clipboardManager: ClipboardManager = LocalClipboardManager.current
+            Column(
+                modifier = Modifier.height(450.dp)
+            ) {
+                SettingBottomSheet(
+                    onShareClicked = {
+                        val currentNote = viewModel.currentNote.value
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/${currentNote?.note_id}/${currentNote?.user_id}"
+                            )
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+
+                        context.startActivity(shareIntent)
+                    },
+                    onCopyLinkClicked = {
+                        val currentNote = viewModel.currentNote.value
+                        coroutineScope.launch {
+                            scaffoldState.bottomSheetState.collapse()
+                        }
+
+                        clipboardManager.setText(AnnotatedString(("https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/${currentNote?.note_id}/${currentNote?.user_id}")))
+                        showSnackBar("Link Copied!")
+                    },
+                    onEditClicked = {
+                        if(viewModel.currentNote.value!=null) {
+                            navigateToUpdateNote(viewModel.currentNote.value?.note_id!!, viewModel.currentNote.value?.user_id!!)
+
+                            coroutineScope.launch {
+                                scaffoldState.bottomSheetState.collapse()
+                            }
+                        }
+                    },
+                    onDeleteClicked = {
+                        coroutineScope.launch {
+                            scaffoldState.bottomSheetState.collapse()
+                        }
+                        showDialog = true
+                    }
+                )
+            }
+        },
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetBackgroundColor = MaterialTheme.colors.surface,
+        sheetPeekHeight = 0.dp
+    ) { paddingValues ->
+        HomeContent(
+            modifier = Modifier
+                .padding(paddingValues),
+            viewModel = viewModel,
+            navigateToNoteDetail = navigateToNoteDetail,
+            navigateToSearch = navigateToSearch,
+            navigateToStarred = navigateToStarred,
+            onDeleteNote = {
+                viewModel.setNote(it)
+                showDialog = true
+            },
+            onSetting = {
+                viewModel.setNote(it)
+                coroutineScope.launch {
+                    scaffoldState.bottomSheetState.expand()
+                }
+            },
+            userListState = userListState,
+            searchListState = searchListState
+        )
+    }
+
+    if(showDialog) {
+        NegativeConfirmationDialog(
+            message = "Are you sure want to delete this note?" +
+                    "deleted Note cannot be restored!",
+            onDismiss = {
+                showDialog = false
+                viewModel.setNote(null)
+            },
+            onClicked = {
+                if(viewModel.currentNote.value != null) {
+                    viewModel.deleteNote(viewModel.currentNote.value!!)
+
+                    showDialog = false
+                }
+            },
+            confirmationText = "Delete"
+        )
+    }
 }
 
 @Composable
+@ExperimentalMaterialApi
 private fun HomeContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     navigateToNoteDetail: (String, String) -> Unit,
     navigateToSearch: (String) -> Unit,
-    navigateToStarred: () -> Unit
+    navigateToStarred: () -> Unit,
+    onDeleteNote: (Note) -> Unit,
+    onSetting: (Note) -> Unit,
+    userListState: LazyListState,
+    searchListState: LazyGridState
 ) {
     val toolbarHeight = 56.dp
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
@@ -89,11 +203,8 @@ private fun HomeContent(
         }
     }
 
-    val userListState = rememberLazyListState()
-    val searchListState = rememberLazyGridState()
-
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
     ) {
@@ -105,15 +216,17 @@ private fun HomeContent(
 
         if(enteredTextEmpty) {
             HomeDefaultContent(
-                modifier = Modifier,
+                modifier = modifier,
                 viewModel = viewModel,
                 defaultState = userListState,
                 navigateToNoteDetail = navigateToNoteDetail,
-                navigateToSearch = navigateToSearch
+                navigateToSearch = navigateToSearch,
+                onDeleteNote = onDeleteNote,
+                onSetting = onSetting
             )
         } else {
             HomeSearchContent(
-                modifier = Modifier,
+                modifier = modifier,
                 viewModel = viewModel,
                 state = searchListState,
                 navigateToNoteDetail = navigateToNoteDetail
@@ -183,7 +296,9 @@ private fun HomeSearchContent(
     val searchedNotes = viewModel.searchedNotes
     val queryNextItem = remember {
         derivedStateOf {
-            viewModel.searchedNotes.isNotEmpty() && state.firstVisibleItemIndex+1 == viewModel.searchedNotes.size && viewModel.searchedNotes.size % 10 == 0
+            viewModel.searchedNotes.isNotEmpty() &&
+                    viewModel.searchedNotes.size % 10 == 0 &&
+                    state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == viewModel.searchedNotes.size - 1
         }
     }
 
@@ -209,17 +324,21 @@ private fun HomeDefaultContent(
     viewModel: HomeViewModel,
     defaultState: LazyListState,
     navigateToNoteDetail: (String, String) -> Unit,
-    navigateToSearch: (String) -> Unit
+    navigateToSearch: (String) -> Unit,
+    onDeleteNote: (Note) -> Unit,
+    onSetting: (Note) -> Unit
 ) {
-    val notes = viewModel.popularNotes.collectAsState()
     val queryNextItem = remember {
         derivedStateOf {
-            viewModel.userNotes.isNotEmpty() && defaultState.firstVisibleItemIndex+1 == viewModel.userNotes.size && viewModel.userNotes.size % 5 == 0
+            viewModel.userNotes.isNotEmpty() &&
+            viewModel.userNotes.size % 5 == 0 &&
+            defaultState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == viewModel.userNotes.size - 1
         }
     }
 
     LaunchedEffect(queryNextItem.value) {
         if(queryNextItem.value) {
+            Timber.d("QUERY")
             viewModel.userNextNote()
         }
     }
@@ -269,7 +388,10 @@ private fun HomeDefaultContent(
                     fontWeight = FontWeight.Bold
                 )
             )
+        }
 
+        item {
+            val notes = viewModel.popularNotes.collectAsState()
             when(notes.value) {
                 is Resource.Loading -> {
                     Timber.d("POPULAR NOTES LOADING")
@@ -362,7 +484,7 @@ private fun HomeDefaultContent(
                         items = viewModel.userNotes,
                         key = { _, note -> note.note_id }
                     ) { index, note ->
-                        UserNoteItem(
+                        SwipeAbleUserItem(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
@@ -370,6 +492,8 @@ private fun HomeDefaultContent(
                             star = note.star,
                             name = note.name,
                             subject = note.subject,
+                            onDelete = { onDeleteNote(note) },
+                            onSetting = { onSetting(note) },
                             firstItem = index == 0
                         )
                     }

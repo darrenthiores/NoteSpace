@@ -12,7 +12,8 @@ object Dummies {
             subject = "subject-$index",
             star = 0,
             user_id = "user-$index",
-            preview = "$index"
+            preview = "$index",
+            version = 0
         )
     }
 }

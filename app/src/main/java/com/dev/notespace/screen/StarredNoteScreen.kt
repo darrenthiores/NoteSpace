@@ -63,8 +63,8 @@ private fun StarredNoteContent(
     val queryNextItem = remember {
         derivedStateOf {
             viewModel.starredNotes.isNotEmpty() &&
-            state.firstVisibleItemIndex+1 == viewModel.starredNotes.size &&
-            viewModel.starredNotes.size % 10 == 0
+            viewModel.starredNotes.size % 10 == 0 &&
+            state.layoutInfo.visibleItemsInfo.lastOrNull()?.index == viewModel.starredNotes.size - 1
         }
     }
 

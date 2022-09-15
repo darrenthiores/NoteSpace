@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -83,11 +84,14 @@ class FirebaseDataSource {
         return noteCollection.document(note.note_id).set(newNote)
     }
 
-    fun getNoteById(note_id: String): Task<DocumentSnapshot> = noteCollection.document(note_id).get()
+    fun getNoteById(note_id: String): Task<DocumentSnapshot> = noteCollection
+        .document(note_id)
+        .get()
 
     fun getPopularNote(interest: List<String>): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val noteCollectionQuery = if(interest.isEmpty()) noteCollection else noteCollection.whereIn("subject", interest)
         val listenerRegistration = noteCollectionQuery
+            .whereEqualTo("status", 1)
             .orderBy("star", Query.Direction.DESCENDING)
             .limit(8)
             .addSnapshotListener { value, error ->
@@ -115,7 +119,8 @@ class FirebaseDataSource {
     // home search
     fun getFirstHomeSearchedNote(searchText: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
-            .whereIn("name", listOf(searchText))
+            .whereEqualTo("status", 1)
+            .whereArrayContains("keywords", searchText)
             .orderBy("note_id", Query.Direction.DESCENDING)
             .limit(10)
             .addSnapshotListener { value, error ->
@@ -142,7 +147,8 @@ class FirebaseDataSource {
 
     fun getNextHomeSearchedNote(searchText: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
-            .whereIn("name", listOf(searchText))
+            .whereEqualTo("status", 1)
+            .whereArrayContains("keywords", searchText)
             .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
             .limit(10)
@@ -170,6 +176,7 @@ class FirebaseDataSource {
 
     fun getFirstUserNotes(): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
+            .whereEqualTo("status", 1)
             .whereEqualTo("user_id", auth.uid)
             .orderBy("note_id", Query.Direction.DESCENDING)
             .limit(5)
@@ -197,6 +204,7 @@ class FirebaseDataSource {
 
     fun getNextUserNotes(lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
+            .whereEqualTo("status", 1)
             .whereEqualTo("user_id", auth.uid)
             .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
@@ -225,6 +233,7 @@ class FirebaseDataSource {
 
     fun getFirstNoteBySubject(subject: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
+            .whereEqualTo("status", 1)
             .whereIn("subject", listOf(subject))
             .orderBy("note_id", Query.Direction.DESCENDING)
             .limit(10)
@@ -252,6 +261,7 @@ class FirebaseDataSource {
 
     fun getNextNoteBySubject(subject: String, lastVisible: String): Flow<ApiResponse<List<NoteResponse>>> = callbackFlow {
         val listenerRegistration = noteCollection
+            .whereEqualTo("status", 1)
             .whereIn("subject", listOf(subject))
             .orderBy("note_id", Query.Direction.DESCENDING)
             .startAfter(lastVisible)
@@ -378,6 +388,62 @@ class FirebaseDataSource {
                 )
             )
             .await()
+    }
+
+    // note manipulation
+    suspend fun deleteNote(note_id: String) {
+        noteCollection.document(note_id)
+            .update(
+                mapOf(
+                    "status" to 0
+                )
+            )
+            .await()
+    }
+
+    suspend fun updateNote(
+        note_id: String,
+        preview: String,
+        name: String,
+        description: String,
+        subject: String,
+        keywords: List<String>,
+        version: Int
+    ) {
+        noteCollection.document(note_id)
+            .update(
+                mapOf(
+                    "preview" to preview,
+                    "name" to name,
+                    "description" to description,
+                    "subject" to subject,
+                    "keywords" to keywords,
+                    "version" to version
+                )
+            )
+            .await()
+    }
+
+    // user manipulation
+    suspend fun updateUser(
+        name: String,
+        interests: List<String>,
+        education: String,
+        major: String
+    ) {
+        if(user?.uid != null) {
+            userCollection
+                .document(user.uid)
+                .update(
+                    mapOf(
+                        "name" to name,
+                        "interests" to interests,
+                        "education" to education,
+                        "major" to major
+                    )
+                )
+                .await()
+        }
     }
 
     /**Storage**/

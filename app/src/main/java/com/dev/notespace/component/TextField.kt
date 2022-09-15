@@ -187,7 +187,8 @@ fun DigitDataInput(
     modifier: Modifier = Modifier,
     label: String,
     textFieldHolder: TextFieldHolder,
-    maxLength: Int = 20
+    maxLength: Int = 20,
+    enabled: Boolean = true
 ) {
     OutlinedTextField(
         value = textFieldHolder.value,
@@ -212,6 +213,7 @@ fun DigitDataInput(
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Number
         ),
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)

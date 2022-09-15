@@ -1,22 +1,22 @@
 package com.dev.notespace
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarResult
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.BottomBar
 import com.dev.notespace.navigation.NoteSpaceNavigation
@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi
 @ExperimentalPagerApi
+@ExperimentalMaterialApi
 @Composable
 fun NoteSpaceApp() {
     val allScreens = NoteSpaceNavigation.values().toList()
@@ -92,9 +93,19 @@ fun NoteSpaceApp() {
             navController = navController,
             showSnackBar = { message ->
                 coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message
+                    val snackBarResult = scaffoldState.snackbarHostState.showSnackbar(
+                        message = message,
+                        actionLabel = "Close"
                     )
+
+                    when(snackBarResult) {
+                        SnackbarResult.Dismissed -> {
+
+                        }
+                        SnackbarResult.ActionPerformed -> {
+                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        }
+                    }
                 }
             },
             mediaUri = result.value
@@ -104,6 +115,7 @@ fun NoteSpaceApp() {
 
 @ExperimentalComposeUiApi
 @ExperimentalPagerApi
+@ExperimentalMaterialApi
 @Composable
 private fun NoteSpaceNavHost(
     modifier: Modifier = Modifier,
@@ -202,12 +214,20 @@ private fun NoteSpaceNavHost(
                 },
                 navigateToStarred = {
                     navController.navigate(NoteSpaceScreen.Starred.name)
-                }
+                },
+                navigateToUpdateNote = { note_id, user_id ->
+                    navigateToEditNote(navController, note_id, user_id)
+                },
+                showSnackBar = showSnackBar
             )
         }
 
         composable(NoteSpaceNavigation.Profile.name) {
-            ProfileScreen()
+            ProfileScreen(
+                onSettingClicked = {
+                    navController.navigate(NoteSpaceScreen.ProfileSetting.name)
+                }
+            )
         }
 
         composable(
@@ -233,6 +253,13 @@ private fun NoteSpaceNavHost(
                 },
                 navArgument("user_id") {
                     type = NavType.StringType
+                }
+            ),
+            deepLinks = listOf(
+                navDeepLink {
+                    action = Intent.ACTION_VIEW
+                    uriPattern =
+                        "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/{note_id}/{user_id}"
                 }
             )
         ) { backStackEntry ->
@@ -283,6 +310,74 @@ private fun NoteSpaceNavHost(
                 }
             )
         }
+
+        composable(
+            route = "${NoteSpaceScreen.EditNote.name}/{note_id}/{user_id}",
+            arguments = listOf(
+                navArgument("note_id") {
+                    type = NavType.StringType
+                },
+                navArgument("user_id") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("note_id")
+            val userId = backStackEntry.arguments?.getString("user_id")
+
+            if(noteId!=null && userId!=null) {
+                EditNoteScreen(
+                    note_id = noteId,
+                    user_id = userId,
+                    onBackClicked = {
+                        navController.navigateUp()
+                    },
+                    onUpdateSuccess = {
+                        navController.navigate(NoteSpaceNavigation.Home.name) {
+                            popUpTo("${NoteSpaceScreen.EditNote.name}/{note_id}/{user_id}") {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    showSnackBar = showSnackBar
+                )
+            }
+        }
+
+        composable(
+            NoteSpaceScreen.ProfileSetting.name
+        ) {
+            ProfileScreenSettings(
+                navigateToUpdateProfile = {
+                    navController.navigate(NoteSpaceScreen.EditProfile.name)
+                },
+                navigateToAbout = {  },
+                navigateOnLogOut = {
+                    navController.navigate(NoteSpaceRegis.Login.name) {
+                        popUpTo(NoteSpaceRegis.Login.name) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onBackClicked = {
+                    navController.navigateUp()
+                }
+            )
+        }
+
+        composable(NoteSpaceScreen.EditProfile.name) {
+            EditProfileScreen(
+                navigateEditSuccess = {
+                    navController.navigate(NoteSpaceNavigation.Profile.name) {
+                        popUpTo(NoteSpaceNavigation.Profile.name) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onBackClicked = { navController.navigateUp() },
+                showSnackBar = showSnackBar
+            )
+        }
     }
 }
 
@@ -309,4 +404,12 @@ private fun navigateToSearch(
     subject: String
 ) {
     navController.navigate("${NoteSpaceScreen.Search.name}/$subject")
+}
+
+private fun navigateToEditNote(
+    navController: NavController,
+    note_id: String,
+    user_id: String
+) {
+    navController.navigate("${NoteSpaceScreen.EditNote.name}/$note_id/$user_id")
 }

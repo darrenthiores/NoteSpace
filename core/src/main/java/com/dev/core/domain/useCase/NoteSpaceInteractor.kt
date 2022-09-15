@@ -117,6 +117,26 @@ class NoteSpaceInteractor @Inject constructor(
     override suspend fun updateUserStarCount(user_id: String, addition: Long) =
         repository.updateUserStarCount(user_id, addition)
 
+    override suspend fun deleteNote(note_id: String) =
+        repository.deleteNote(note_id)
+
+    override suspend fun updateNote(
+        note_id: String,
+        new_preview: Uri?,
+        preview: String,
+        name: String,
+        description: String,
+        subject: String,
+        version: Int
+    ) = repository.updateNote(note_id, new_preview, preview, name, description, subject, version)
+
+    override suspend fun updateUser(
+        name: String,
+        interests: List<String>,
+        education: String,
+        major: String
+    ) = repository.updateUser(name, interests, education, major)
+
     override suspend fun getPdfFile(
         user_id: String, note_id: String, height: Int, width: Int
     ): List<ImageBitmap> =

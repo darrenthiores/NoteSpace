@@ -16,5 +16,11 @@ data class NoteResponse(
     @PropertyName("user_id")
     val user_id: String = "",
     @PropertyName("preview")
-    val preview: String = ""
+    val preview: String = "",
+    @PropertyName("keywords")
+    val keywords: List<String> = emptyList(),
+    @PropertyName("status")
+    val status: Int = 1,
+    @PropertyName("version")
+    val version: Int = 0
 )
