@@ -63,6 +63,9 @@ object DataMapper {
                 star = it.star,
                 user_id = it.user_id,
                 preview = it.preview,
+                type = it.type,
+                image_urls = it.image_urls,
+                texts = it.texts,
                 version = it.version
             )
         }
@@ -76,6 +79,9 @@ object DataMapper {
             star = input.star,
             user_id = input.user_id,
             preview = input.preview,
+            type = input.type,
+            image_urls = input.image_urls,
+            texts = input.texts,
             version = input.version
         )
 
@@ -89,6 +95,9 @@ object DataMapper {
                 star = it.star,
                 user_id = it.user_id,
                 preview = it.preview,
+                type = it.type,
+                image_urls = it.image_urls,
+                texts = it.texts,
                 version = it.version
             )
         }
@@ -102,6 +111,9 @@ object DataMapper {
             star = input.star,
             user_id = input.user_id,
             preview = input.preview,
+            type = input.type,
+            image_urls = input.image_urls,
+            texts = input.texts,
             version = input.version
         )
 

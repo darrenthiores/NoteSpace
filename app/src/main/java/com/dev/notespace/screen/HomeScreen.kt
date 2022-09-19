@@ -58,10 +58,10 @@ import kotlin.math.roundToInt
 @ExperimentalMaterialApi
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     navigateToSearch: (String) -> Unit,
     navigateToStarred: () -> Unit,
-    navigateToUpdateNote: (String, String) -> Unit,
+    navigateToUpdateNote: (String, String, String) -> Unit,
     showSnackBar: (String) -> Unit
 ) {
     val userListState = rememberLazyListState()
@@ -92,7 +92,7 @@ fun HomeScreen(
                             action = Intent.ACTION_SEND
                             putExtra(
                                 Intent.EXTRA_TEXT,
-                                "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/${currentNote?.note_id}/${currentNote?.user_id}"
+                                "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/${currentNote?.note_id}/${currentNote?.user_id}/${currentNote?.type}"
                             )
                             type = "text/plain"
                         }
@@ -106,12 +106,12 @@ fun HomeScreen(
                             scaffoldState.bottomSheetState.collapse()
                         }
 
-                        clipboardManager.setText(AnnotatedString(("https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/${currentNote?.note_id}/${currentNote?.user_id}")))
+                        clipboardManager.setText(AnnotatedString(("https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/${currentNote?.note_id}/${currentNote?.user_id}/${currentNote?.type}")))
                         showSnackBar("Link Copied!")
                     },
                     onEditClicked = {
                         if(viewModel.currentNote.value!=null) {
-                            navigateToUpdateNote(viewModel.currentNote.value?.note_id!!, viewModel.currentNote.value?.user_id!!)
+                            navigateToUpdateNote(viewModel.currentNote.value?.note_id!!, viewModel.currentNote.value?.user_id!!, viewModel.currentNote.value?.type!!)
 
                             coroutineScope.launch {
                                 scaffoldState.bottomSheetState.collapse()
@@ -178,7 +178,7 @@ fun HomeScreen(
 private fun HomeContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     navigateToSearch: (String) -> Unit,
     navigateToStarred: () -> Unit,
     onDeleteNote: (Note) -> Unit,
@@ -291,7 +291,7 @@ private fun HomeSearchContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     state: LazyGridState,
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String, String) -> Unit
 ) {
     val searchedNotes = viewModel.searchedNotes
     val queryNextItem = remember {
@@ -323,7 +323,7 @@ private fun HomeDefaultContent(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     defaultState: LazyListState,
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     navigateToSearch: (String) -> Unit,
     onDeleteNote: (Note) -> Unit,
     onSetting: (Note) -> Unit
@@ -487,7 +487,7 @@ private fun HomeDefaultContent(
                         SwipeAbleUserItem(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
-                                .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
+                                .clickable { navigateToNoteDetail(note.note_id, note.user_id, note.type) },
                             preview = note.preview,
                             star = note.star,
                             name = note.name,

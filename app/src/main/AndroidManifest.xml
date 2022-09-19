@@ -32,6 +32,9 @@
                 <data android:scheme="https" android:host="www.notespace.com"/>
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr" />
     </application>
 
 </manifest>

@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,42 +22,36 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.dev.core.data.Resource
-import com.dev.notespace.component.ActionTopBar
-import com.dev.notespace.component.DataInput
-import com.dev.notespace.component.PdfCarousel
-import com.dev.notespace.component.SubjectDropDown
+import com.dev.notespace.component.*
 import com.dev.notespace.helper.MediaPicker
 import com.dev.notespace.holder.TextFieldHolder
-import com.dev.notespace.viewModel.AddViewModel
+import com.dev.notespace.viewModel.AddByImageViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import timber.log.Timber
-import kotlin.math.sqrt
 
 @Composable
 @ExperimentalPagerApi
-fun AddScreen(
-    viewModel: AddViewModel = hiltViewModel(),
-    _mediaUri: Uri?,
+fun AddByImageScreen(
+    viewModel: AddByImageViewModel = hiltViewModel(),
+    _imgUri: List<Uri>,
     onBackClicked: () -> Unit,
     onPostSuccess: () -> Unit,
     showSnackBar: (String) -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
 
-    val mediaUri = remember {
-        mutableStateOf(_mediaUri)
+    val imgUri = remember {
+        mutableStateOf(_imgUri)
     }
 
     val previewUri = remember {
         mutableStateOf<Uri?>(null)
     }
 
-    val width = LocalConfiguration.current.screenWidthDp
-    val height = (width * sqrt(2f)).toInt()
     val context = LocalContext.current
 
-    LaunchedEffect(mediaUri.value) {
-        viewModel.getPreviews(mediaUri.value, width, height, context)
+    LaunchedEffect(imgUri.value) {
+        viewModel.getTextByImages(imgUri.value, context)
     }
 
     var isPosting by remember {
@@ -69,15 +62,15 @@ fun AddScreen(
         mutableStateOf(false)
     }
 
-    val pdfLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-        if (it != null) {
-            mediaUri.value = it
+    val imgLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+        if (it.isNotEmpty()) {
+            imgUri.value = it
         } else {
             showSnackBar("Something Error! Please try again..")
         }
     }
 
-    val imgLauncher = rememberLauncherForActivityResult(MediaPicker()) {
+    val previewLauncher = rememberLauncherForActivityResult(MediaPicker()) {
         if (it != null) {
             previewUri.value = it
         } else {
@@ -97,10 +90,10 @@ fun AddScreen(
                             viewModel.nameHolder,
                             viewModel.subjectHolder
                         ) &&
-                        mediaUri.value!=null
+                        imgUri.value.isNotEmpty()
                     ) {
                         if(previewUri.value!=null) {
-                            viewModel.insertNote(mediaUri.value!!, previewUri.value!!)
+                            viewModel.insertNote(imgUri.value, previewUri.value!!)
                             isPosting = true
                             showLoading = true
                         } else {
@@ -114,16 +107,17 @@ fun AddScreen(
         },
         scaffoldState = scaffoldState
     ) {
-        AddContent(
+        AddByImageContent(
             modifier = Modifier
                 .padding(it),
             viewModel = viewModel,
             onRePickClicked = {
-                pdfLauncher.launch("application/pdf")
+                imgLauncher.launch("image/*")
             },
+            imgUri = imgUri,
             previewUri = previewUri,
             onRePickPreview = {
-                imgLauncher.launch("")
+                previewLauncher.launch("")
             }
         )
     }
@@ -166,11 +160,12 @@ fun AddScreen(
 
 @Composable
 @ExperimentalPagerApi
-private fun AddContent(
+private fun AddByImageContent(
     modifier: Modifier = Modifier,
-    viewModel: AddViewModel,
+    viewModel: AddByImageViewModel,
     onRePickClicked: () -> Unit,
-    previewUri: MutableState<Uri?>,
+    previewUri: State<Uri?>,
+    imgUri: State<List<Uri>>,
     onRePickPreview: () -> Unit
 ) {
     Column(
@@ -179,15 +174,15 @@ private fun AddContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        PdfCarousel(
+        ImageUriCarousel(
             modifier = Modifier
                 .padding(PaddingValues(top = 16.dp)),
-            count = viewModel.previews.size,
-            previews = viewModel.previews
+            count = imgUri.value.size,
+            previews = imgUri.value
         )
 
         Text(
-            text = "Change Pdf",
+            text = "Change Image",
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
@@ -200,6 +195,10 @@ private fun AddContent(
             style = MaterialTheme.typography.caption,
             textAlign = TextAlign.Center
         )
+        
+        viewModel.textByImages.forEach { 
+            Text(text = it, modifier = Modifier.padding(top = 8.dp))
+        }
 
         Text(
             text = "Add Preview",

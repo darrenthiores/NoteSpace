@@ -8,5 +8,8 @@ data class Note(
     val star: Int,
     val user_id: String,
     val preview: String,
+    val type: String,
+    val image_urls: List<String>,
+    val texts: List<String>,
     val version: Int
 )

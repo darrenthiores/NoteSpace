@@ -8,5 +8,7 @@ enum class NoteSpaceScreen {
     Starred,
     EditNote,
     ProfileSetting,
-    EditProfile
+    EditProfile,
+    AddByPdf,
+    AddByImage
 }

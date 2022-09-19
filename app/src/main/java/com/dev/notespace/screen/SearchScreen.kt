@@ -42,7 +42,7 @@ import kotlin.math.roundToInt
 fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel(),
     subject: String,
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     onBackClicked: () -> Unit
 ) {
     LaunchedEffect(true) {
@@ -155,7 +155,7 @@ private fun SearchContentDefault(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel,
     subject: String,
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     state: LazyGridState
 ) {
     val queryNextItem = remember {
@@ -186,7 +186,7 @@ private fun SearchContentDefault(
 private fun SearchContentOnSearch(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel,
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     state: LazyGridState
 ) {
     val queryNextItem = remember {

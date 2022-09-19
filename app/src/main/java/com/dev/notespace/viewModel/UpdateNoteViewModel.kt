@@ -29,6 +29,7 @@ class UpdateNoteViewModel @Inject constructor(
     val previewUri = mutableStateOf<Uri?>(null)
     val previewLink = mutableStateOf("")
     val version = mutableStateOf(0)
+    val imageUrls = mutableStateListOf<String>()
 
     private val _note = mutableStateOf<Resource<NoteDomain>>(Resource.Loading())
     val note: State<Resource<NoteDomain>>

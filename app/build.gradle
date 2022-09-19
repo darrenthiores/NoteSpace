@@ -108,4 +108,10 @@ dependencies {
     // placeholder
     implementation "com.google.accompanist:accompanist-placeholder-material:0.24.12-rc"
 
+    // ml
+    // v1
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.1'
+
+    // v2
+//    implementation 'com.google.mlkit:text-recognition:16.0.0-beta5'
 }

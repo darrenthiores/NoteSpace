@@ -19,6 +19,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.dev.core.domain.model.presenter.User
 import com.dev.notespace.component.BottomBar
+import com.dev.notespace.component.PostPickerDialog
+import com.dev.notespace.helper.MediaType
 import com.dev.notespace.navigation.NoteSpaceNavigation
 import com.dev.notespace.navigation.NoteSpaceRegis
 import com.dev.notespace.navigation.NoteSpaceScreen
@@ -42,14 +44,28 @@ fun NoteSpaceApp() {
         mutableStateOf(false)
     }
 
-    val result = remember { mutableStateOf<Uri?>(null) }
+    val pdfResult = remember { mutableStateOf<Uri?>(null) }
+    val imgResult = remember { mutableStateOf<List<Uri>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+    var showPickerDialog by remember {
+        mutableStateOf(false)
+    }
+
+    val pdfLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         if (it != null) {
-            result.value = it
-            navController.navigate(NoteSpaceNavigation.Post.name)
+            showPickerDialog = false
+            pdfResult.value = it
+            navController.navigate(NoteSpaceScreen.AddByPdf.name)
+        }
+    }
+
+    val imgLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+        if (it.isNotEmpty()) {
+            showPickerDialog = false
+            imgResult.value = it
+            navController.navigate(NoteSpaceScreen.AddByImage.name)
         }
     }
 
@@ -78,7 +94,7 @@ fun NoteSpaceApp() {
                     onTabSelected = { screen -> navController.navigate(screen.name) },
                     currentScreen = currentScreen,
                     onAddPostClicked = {
-                        launcher.launch("application/pdf")
+                        showPickerDialog = true
                     }
                 )
             }
@@ -108,7 +124,25 @@ fun NoteSpaceApp() {
                     }
                 }
             },
-            mediaUri = result.value
+            pdfUri = pdfResult.value,
+            imgUri = imgResult.value
+        )
+    }
+
+    if(showPickerDialog) {
+        PostPickerDialog(
+            message = "Choose Media Type To Upload",
+            onDismiss = { showPickerDialog = false },
+            onClicked = {
+                when(it) {
+                    MediaType.Pdf.name -> {
+                        pdfLauncher.launch("application/pdf")
+                    }
+                    MediaType.Image.name -> {
+                        imgLauncher.launch("image/*")
+                    }
+                }
+            }
         )
     }
 }
@@ -121,7 +155,8 @@ private fun NoteSpaceNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     showSnackBar: (String) -> Unit,
-    mediaUri: Uri?
+    pdfUri: Uri?,
+    imgUri: List<Uri>
 ) {
     NavHost(
         navController = navController,
@@ -206,8 +241,8 @@ private fun NoteSpaceNavHost(
 
         composable(NoteSpaceNavigation.Home.name) {
             HomeScreen(
-                navigateToNoteDetail = { note_id, user_id ->
-                    navigateToNoteDetail(navController, note_id, user_id)
+                navigateToNoteDetail = { note_id, user_id, type ->
+                    navigateToNoteDetail(navController, note_id, user_id, type)
                 },
                 navigateToSearch = { subject ->
                     navigateToSearch(navController, subject)
@@ -215,8 +250,8 @@ private fun NoteSpaceNavHost(
                 navigateToStarred = {
                     navController.navigate(NoteSpaceScreen.Starred.name)
                 },
-                navigateToUpdateNote = { note_id, user_id ->
-                    navigateToEditNote(navController, note_id, user_id)
+                navigateToUpdateNote = { note_id, user_id, type ->
+                    navigateToEditNote(navController, note_id, user_id, type)
                 },
                 showSnackBar = showSnackBar
             )
@@ -231,10 +266,10 @@ private fun NoteSpaceNavHost(
         }
 
         composable(
-            route = NoteSpaceNavigation.Post.name
+            route = NoteSpaceScreen.AddByPdf.name
         ) {
-            AddScreen(
-                _mediaUri = mediaUri,
+            AddByPdfScreen(
+                _mediaUri = pdfUri,
                 onBackClicked = {
                     navController.navigateUp()
                 },
@@ -246,12 +281,30 @@ private fun NoteSpaceNavHost(
         }
 
         composable(
-            route = "${NoteSpaceScreen.NoteDetail.name}/{note_id}/{user_id}",
+            route = NoteSpaceScreen.AddByImage.name
+        ) {
+            AddByImageScreen(
+                _imgUri = imgUri,
+                onBackClicked = {
+                    navController.navigateUp()
+                },
+                onPostSuccess = {
+                    navController.navigate(NoteSpaceNavigation.Home.name)
+                },
+                showSnackBar = showSnackBar
+            )
+        }
+
+        composable(
+            route = "${NoteSpaceScreen.NoteDetail.name}/{note_id}/{user_id}/{media_type}",
             arguments = listOf(
                 navArgument("note_id") {
                     type = NavType.StringType
                 },
                 navArgument("user_id") {
+                    type = NavType.StringType
+                },
+                navArgument("media_type") {
                     type = NavType.StringType
                 }
             ),
@@ -259,17 +312,19 @@ private fun NoteSpaceNavHost(
                 navDeepLink {
                     action = Intent.ACTION_VIEW
                     uriPattern =
-                        "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/{note_id}/{user_id}"
+                        "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/{note_id}/{user_id}/{media_type}"
                 }
             )
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("note_id")
             val userId = backStackEntry.arguments?.getString("user_id")
+            val mediaType = backStackEntry.arguments?.getString("media_type")
 
-            if(noteId!=null && userId!=null) {
+            if(noteId!=null && userId!=null && mediaType!=null) {
                 NoteDetailScreen(
                     note_id = noteId,
                     user_id = userId,
+                    mediaType = mediaType,
                     onBackClicked = {
                         navController.navigateUp()
                     }
@@ -290,8 +345,8 @@ private fun NoteSpaceNavHost(
             if(subject!=null) {
                 SearchScreen(
                     subject = subject,
-                    navigateToNoteDetail = { note_id, user_id ->
-                        navigateToNoteDetail(navController, note_id, user_id)
+                    navigateToNoteDetail = { note_id, user_id, type ->
+                        navigateToNoteDetail(navController, note_id, user_id, type)
                     },
                     onBackClicked = {
                         navController.navigateUp()
@@ -302,8 +357,8 @@ private fun NoteSpaceNavHost(
 
         composable(NoteSpaceScreen.Starred.name) {
             StarredNoteScreen(
-                navigateToNoteDetail = { note_id, user_id ->
-                    navigateToNoteDetail(navController, note_id, user_id)
+                navigateToNoteDetail = { note_id, user_id, type ->
+                    navigateToNoteDetail(navController, note_id, user_id, type)
                 },
                 onBackClicked = {
                     navController.navigateUp()
@@ -312,29 +367,34 @@ private fun NoteSpaceNavHost(
         }
 
         composable(
-            route = "${NoteSpaceScreen.EditNote.name}/{note_id}/{user_id}",
+            route = "${NoteSpaceScreen.EditNote.name}/{note_id}/{user_id}/{media_type}",
             arguments = listOf(
                 navArgument("note_id") {
                     type = NavType.StringType
                 },
                 navArgument("user_id") {
                     type = NavType.StringType
+                },
+                navArgument("media_type") {
+                    type = NavType.StringType
                 }
             )
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("note_id")
             val userId = backStackEntry.arguments?.getString("user_id")
+            val mediaType = backStackEntry.arguments?.getString("media_type")
 
-            if(noteId!=null && userId!=null) {
+            if(noteId!=null && userId!=null && mediaType!=null) {
                 EditNoteScreen(
                     note_id = noteId,
                     user_id = userId,
+                    mediaType = mediaType,
                     onBackClicked = {
                         navController.navigateUp()
                     },
                     onUpdateSuccess = {
                         navController.navigate(NoteSpaceNavigation.Home.name) {
-                            popUpTo("${NoteSpaceScreen.EditNote.name}/{note_id}/{user_id}") {
+                            popUpTo("${NoteSpaceScreen.EditNote.name}/{note_id}/{user_id}/{media_type}") {
                                 inclusive = true
                             }
                         }
@@ -394,9 +454,10 @@ private fun navigateToOtp(
 private fun navigateToNoteDetail(
     navController: NavController,
     note_id: String,
-    user_id: String
+    user_id: String,
+    media_type: String
 ) {
-    navController.navigate("${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id")
+    navController.navigate("${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id/$media_type")
 }
 
 private fun navigateToSearch(
@@ -409,7 +470,8 @@ private fun navigateToSearch(
 private fun navigateToEditNote(
     navController: NavController,
     note_id: String,
-    user_id: String
+    user_id: String,
+    type: String
 ) {
-    navController.navigate("${NoteSpaceScreen.EditNote.name}/$note_id/$user_id")
+    navController.navigate("${NoteSpaceScreen.EditNote.name}/$note_id/$user_id/$type")
 }

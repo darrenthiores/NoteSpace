@@ -42,7 +42,9 @@ interface INoteSpaceRepository {
     suspend fun saveInterests(interests: List<String>)
 
     // note related
-    suspend fun insertNote(name: String, description: String, subject: String, file: Uri, preview: Uri): Resource<Any?>
+    suspend fun insertNoteByPdf(name: String, description: String, subject: String, file: Uri, texts: List<String>, preview: Uri): Resource<Any?>
+
+    suspend fun insertNoteByImg(name: String, description: String, subject: String, file: List<Uri>, texts: List<String>, preview: Uri): Resource<Any?>
 
     suspend fun getNoteById(note_id: String): Resource<NoteDomain>
 

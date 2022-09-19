@@ -57,14 +57,25 @@ class NoteSpaceInteractor @Inject constructor(
     override suspend fun saveInterests(interests: List<String>) =
         repository.saveInterests(interests)
 
-    override suspend fun insertNote(
+    override suspend fun insertNoteByPdf(
         name: String,
         description: String,
         subject: String,
         file: Uri,
+        texts: List<String>,
         preview: Uri
     ): Resource<Any?> =
-        repository.insertNote(name, description, subject, file, preview)
+        repository.insertNoteByPdf(name, description, subject, file, texts, preview)
+
+    override suspend fun insertNoteByImg(
+        name: String,
+        description: String,
+        subject: String,
+        file: List<Uri>,
+        texts: List<String>,
+        preview: Uri
+    ): Resource<Any?> =
+        repository.insertNoteByImg(name, description, subject, file, texts, preview)
 
     override suspend fun getNoteById(note_id: String): Resource<NoteDomain> =
         repository.getNoteById(note_id)

@@ -18,10 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.dev.core.data.Resource
 import com.dev.core.utils.DataMapper
-import com.dev.notespace.component.ActionTopBar
-import com.dev.notespace.component.DataInput
-import com.dev.notespace.component.PdfCarousel
-import com.dev.notespace.component.SubjectDropDown
+import com.dev.notespace.component.*
 import com.dev.notespace.helper.MediaPicker
 import com.dev.notespace.holder.TextFieldHolder
 import com.dev.notespace.viewModel.UpdateNoteViewModel
@@ -35,6 +32,7 @@ fun EditNoteScreen(
     viewModel: UpdateNoteViewModel = hiltViewModel(),
     note_id: String,
     user_id: String,
+    mediaType: String,
     onBackClicked: () -> Unit,
     onUpdateSuccess: () -> Unit,
     showSnackBar: (String) -> Unit
@@ -50,7 +48,9 @@ fun EditNoteScreen(
 
     LaunchedEffect(true) {
         viewModel.setNote(note_id)
-        viewModel.getPreviews(user_id, note_id, height, width)
+        if(mediaType == "PDF") {
+            viewModel.getPreviews(user_id, note_id, height, width)
+        }
     }
 
     LaunchedEffect(viewModel.note.value) {
@@ -73,6 +73,10 @@ fun EditNoteScreen(
                 viewModel.subjectHolder.setTextFieldValue(data.subject)
                 viewModel.previewLink.value = data.preview
                 viewModel.version.value = data.version
+
+                if(mediaType == "IMAGE") {
+                    viewModel.imageUrls.addAll(data.image_urls)
+                }
 
                 showLoading = false
             }
@@ -116,6 +120,7 @@ fun EditNoteScreen(
             modifier = Modifier
                 .padding(it),
             viewModel = viewModel,
+            type = mediaType,
             onRePickPreview = {
                 imgLauncher.launch("")
             }
@@ -138,6 +143,7 @@ fun EditNoteScreen(
 private fun EditNoteContent(
     modifier: Modifier = Modifier,
     viewModel: UpdateNoteViewModel,
+    type: String,
     onRePickPreview: () -> Unit
 ) {
     Column(
@@ -146,12 +152,24 @@ private fun EditNoteContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        PdfCarousel(
-            modifier = Modifier
-                .padding(PaddingValues(top = 16.dp)),
-            count = viewModel.previews.size,
-            previews = viewModel.previews
-        )
+        when(type) {
+            "PDF" -> {
+                PdfCarousel(
+                    modifier = modifier
+                        .padding(PaddingValues(top = 16.dp)),
+                    count = viewModel.previews.size,
+                    previews = viewModel.previews
+                )
+            }
+            "IMAGE" -> {
+                ImageUrlCarousel(
+                    modifier = Modifier
+                        .padding(PaddingValues(top = 16.dp)),
+                    count = viewModel.imageUrls.size,
+                    previews = viewModel.imageUrls
+                )
+            }
+        }
 
         Text(
             text = "Change Preview",

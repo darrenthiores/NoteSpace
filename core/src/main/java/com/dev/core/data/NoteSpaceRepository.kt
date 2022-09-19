@@ -88,11 +88,12 @@ class NoteSpaceRepository @Inject constructor(
     override suspend fun saveInterests(interests: List<String>) =
         dataStore.saveInterests(Converters().listOfStringToString(interests))
 
-    override suspend fun insertNote(
+    override suspend fun insertNoteByPdf(
         name: String,
         description: String,
         subject: String,
         file: Uri,
+        texts: List<String>,
         preview: Uri
     ): Resource<Any?> {
         val noteId = "${UUID.randomUUID()}-notespace"
@@ -113,7 +114,19 @@ class NoteSpaceRepository @Inject constructor(
                 val keywords: List<String> = name.mapIndexed { index, _ ->
                     name.substring(0, index+1).lowercase()
                 }
-                val noteRequest = NoteRequest(noteId, name, description, subject, "", 0, url.toString(), keywords)
+                val noteRequest = NoteRequest(
+                    noteId,
+                    name,
+                    description,
+                    subject,
+                    "",
+                    0,
+                    url.toString(),
+                    "PDF",
+                    emptyList(),
+                    texts,
+                    keywords
+                )
                 fbDataSource
                     .insertNote(
                         noteRequest
@@ -130,6 +143,67 @@ class NoteSpaceRepository @Inject constructor(
             } else {
                 Resource.Error(uploadPreview.error?.message.toString())
             }
+        }
+    }
+
+    override suspend fun insertNoteByImg(
+        name: String,
+        description: String,
+        subject: String,
+        file: List<Uri>,
+        texts: List<String>,
+        preview: Uri
+    ): Resource<Any?> {
+        val noteId = "${UUID.randomUUID()}-notespace"
+        val listUrl: List<String> = file.mapIndexed { index, uri ->
+            fbDataSource
+                .insertImg("$noteId-$index", uri)
+                .await()
+
+            fbDataSource
+                .downloadImg("$noteId-$index")
+                .await()
+                .toString()
+        }
+
+        val uploadPreview = fbDataSource
+            .insertPreview(noteId, preview)
+            .await()
+
+        if(
+            listUrl.isNotEmpty() &&
+            uploadPreview.task.isSuccessful
+        ) {
+            val url = fbDataSource.downloadPreview(noteId).await()
+            return try {
+                val keywords: List<String> = name.mapIndexed { index, _ ->
+                    name.substring(0, index+1).lowercase()
+                }
+                val noteRequest = NoteRequest(
+                    noteId,
+                    name,
+                    description,
+                    subject,
+                    "",
+                    0,
+                    url.toString(),
+                    "IMAGE",
+                    listUrl,
+                    texts,
+                    keywords
+                )
+                fbDataSource
+                    .insertNote(
+                        noteRequest
+                    )
+                    .await()
+
+                Resource.Success(null)
+            } catch (e: Exception) {
+                Resource.Error(e.message.toString())
+            }
+        } else {
+            return Resource.Error(uploadPreview.error?.message.toString())
         }
     }
 

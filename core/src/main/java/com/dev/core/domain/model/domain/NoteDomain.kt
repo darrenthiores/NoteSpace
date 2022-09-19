@@ -1,5 +1,7 @@
 package com.dev.core.domain.model.domain
 
+import com.google.firebase.firestore.PropertyName
+
 data class NoteDomain(
     val note_id: String,
     val name: String,
@@ -8,5 +10,8 @@ data class NoteDomain(
     val star: Int,
     val user_id: String,
     val preview: String,
+    val type: String,
+    val image_urls: List<String>,
+    val texts: List<String>,
     val version: Int
 )

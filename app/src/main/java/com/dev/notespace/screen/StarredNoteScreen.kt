@@ -28,7 +28,7 @@ import com.dev.notespace.viewModel.StarredNoteViewModel
 @Composable
 fun StarredNoteScreen(
     viewModel: StarredNoteViewModel = hiltViewModel(),
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     onBackClicked: () -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -58,7 +58,7 @@ private fun StarredNoteContent(
     modifier: Modifier = Modifier,
     viewModel: StarredNoteViewModel,
     state: LazyListState,
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String, String) -> Unit
 ) {
     val queryNextItem = remember {
         derivedStateOf {
@@ -128,7 +128,7 @@ private fun StarredNoteContent(
                             UserNoteItem(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
-                                    .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
+                                    .clickable { navigateToNoteDetail(note.note_id, note.user_id, noteById!!.type) },
                                 preview = noteById!!.preview,
                                 star = noteById!!.star,
                                 name = noteById!!.name,

@@ -460,6 +460,16 @@ class FirebaseDataSource {
             .child("notespace_preview/${auth.uid}/${note_id}")
             .downloadUrl
 
+    fun insertImg(note_id: String, img: Uri): UploadTask =
+        storageReference
+            .child("notespace_image/${auth.uid}/${note_id}")
+            .putFile(img)
+
+    fun downloadImg(note_id: String): Task<Uri> =
+        storageReference
+            .child("notespace_image/${auth.uid}/${note_id}")
+            .downloadUrl
+
     fun insertPdfFile(note_id: String, file: Uri): UploadTask =
         storageReference
             .child("notespace_note/${auth.uid}/${note_id}.pdf")

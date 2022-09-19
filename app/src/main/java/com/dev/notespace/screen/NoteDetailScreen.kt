@@ -26,6 +26,8 @@ import com.dev.core.data.Resource
 import com.dev.core.domain.model.domain.NoteDomain
 import com.dev.core.domain.model.domain.UserDomain
 import com.dev.core.utils.DataMapper
+import com.dev.notespace.component.ImageUriCarousel
+import com.dev.notespace.component.ImageUrlCarousel
 import com.dev.notespace.component.MidTitleTopBar
 import com.dev.notespace.component.PdfCarousel
 import com.dev.notespace.navigation.NoteSpaceScreen
@@ -41,6 +43,7 @@ fun NoteDetailScreen(
     viewModel: NoteDetailViewModel = hiltViewModel(),
     note_id: String,
     user_id: String,
+    mediaType: String,
     onBackClicked: () -> Unit
 ) {
     val width = LocalConfiguration.current.screenWidthDp
@@ -53,8 +56,11 @@ fun NoteDetailScreen(
     LaunchedEffect(true) {
         viewModel.setNote(note_id)
         viewModel.setUploader(user_id)
-        viewModel.getPreviews(user_id, note_id, height, width)
         isNoteStarred.value = viewModel.checkIsNoteStarred(note_id)
+
+        if(mediaType == "PDF") {
+            viewModel.getPreviews(user_id, note_id, height, width)
+        }
     }
 
     val scaffoldState = rememberScaffoldState()
@@ -72,7 +78,7 @@ fun NoteDetailScreen(
                                 action = Intent.ACTION_SEND
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id"
+                                    "https://www.notespace.com/${NoteSpaceScreen.NoteDetail.name}/$note_id/$user_id/$mediaType"
                                 )
                                 type = "text/plain"
                             }
@@ -133,7 +139,7 @@ private fun NoteDetailContent(
         NoteItem(
             modifier = Modifier,
             note = viewModel.note,
-            previews = viewModel.previews,
+            pdfPreviews = viewModel.previews,
             starCount = viewModel.currentStar,
             updateCurrentStar = viewModel::setStar
         )
@@ -150,7 +156,7 @@ private fun NoteDetailContent(
 private fun ColumnScope.NoteItem(
     modifier: Modifier = Modifier,
     note: State<Resource<NoteDomain>>,
-    previews: List<ImageBitmap?>,
+    pdfPreviews: List<ImageBitmap?>,
     starCount: Long?,
     updateCurrentStar: (Long) -> Unit
 ) {
@@ -168,12 +174,24 @@ private fun ColumnScope.NoteItem(
                 updateCurrentStar(data.star.toLong())
             }
 
-            PdfCarousel(
-                modifier = modifier
-                    .padding(PaddingValues(top = 16.dp)),
-                count = previews.size,
-                previews = previews
-            )
+            when(data.type) {
+                "PDF" -> {
+                    PdfCarousel(
+                        modifier = modifier
+                            .padding(PaddingValues(top = 16.dp)),
+                        count = pdfPreviews.size,
+                        previews = pdfPreviews
+                    )
+                }
+                "IMAGE" -> {
+                    ImageUrlCarousel(
+                        modifier = Modifier
+                            .padding(PaddingValues(top = 16.dp)),
+                        count = data.image_urls.size,
+                        previews = data.image_urls
+                    )
+                }
+            }
 
             Divider(
                 modifier = Modifier

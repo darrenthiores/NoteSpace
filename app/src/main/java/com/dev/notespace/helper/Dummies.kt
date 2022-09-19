@@ -13,6 +13,9 @@ object Dummies {
             star = 0,
             user_id = "user-$index",
             preview = "$index",
+            type = "",
+            image_urls = emptyList(),
+            texts = emptyList(),
             version = 0
         )
     }

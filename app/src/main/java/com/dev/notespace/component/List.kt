@@ -26,7 +26,7 @@ fun HomePopularList(
     modifier: Modifier = Modifier,
     childModifier: Modifier = Modifier,
     notes: List<Note>,
-    navigateToNoteDetail: (String, String) -> Unit
+    navigateToNoteDetail: (String, String, String) -> Unit
 ) {
     LazyRow(
         modifier = modifier,
@@ -38,7 +38,7 @@ fun HomePopularList(
         ) { index, note ->
             NoteItem(
                 modifier = Modifier
-                    .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
+                    .clickable { navigateToNoteDetail(note.note_id, note.user_id, note.type) },
                 preview = note.preview,
                 star = note.star,
                 name = note.name,
@@ -79,7 +79,7 @@ fun HomePersonalList(
 fun SearchList(
     modifier: Modifier = Modifier,
     searchedNotes: List<Note>,
-    navigateToNoteDetail: (String, String) -> Unit,
+    navigateToNoteDetail: (String, String, String) -> Unit,
     state: LazyGridState,
     searchPagingState: MutableState<PagingState>
 ) {
@@ -126,7 +126,7 @@ fun SearchList(
                     ) { note ->
                         SearchNoteItem(
                             modifier = Modifier
-                                .clickable { navigateToNoteDetail(note.note_id, note.user_id) },
+                                .clickable { navigateToNoteDetail(note.note_id, note.user_id, note.type) },
                             preview = note.preview,
                             star = note.star,
                             name = note.name,
