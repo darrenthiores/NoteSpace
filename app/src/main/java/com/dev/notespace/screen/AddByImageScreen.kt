@@ -196,9 +196,9 @@ private fun AddByImageContent(
             textAlign = TextAlign.Center
         )
         
-        viewModel.textByImages.forEach { 
-            Text(text = it, modifier = Modifier.padding(top = 8.dp))
-        }
+//        viewModel.textByImages.forEach {
+//            Text(text = it, modifier = Modifier.padding(top = 8.dp))
+//        }
 
         Text(
             text = "Add Preview",

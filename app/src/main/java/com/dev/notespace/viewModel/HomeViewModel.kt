@@ -17,6 +17,7 @@ import com.dev.notespace.state.PagingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -56,6 +57,7 @@ class HomeViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         userPagingState.value = PagingState.NextLoadError
+                        Timber.e("USER NOTE ERROR: ${it.message}")
                     }
                     is Resource.Success -> {
                         userPagingState.value = PagingState.Success
@@ -68,7 +70,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            noteSpaceUseCase.getPopularNote().collect {
+            noteSpaceUseCase.getPopularNote().collectLatest {
                 _popularNotes.value = it
             }
 

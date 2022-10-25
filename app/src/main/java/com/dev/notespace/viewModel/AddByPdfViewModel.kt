@@ -60,8 +60,8 @@ class AddByPdfViewModel @Inject constructor(
                     val page = renderer?.openPage(i)
                     val bitmap =
                         Bitmap.createBitmap(
-                            width * 2,
-                            height * 2,
+                            width * 2, // possible solution to issue-1 and issue-2 but possibly generate issue-4
+                            height * 2, // possible solution to issue-1 and issue-2 but possibly generate issue-4
                             Bitmap.Config.ARGB_8888
                         )
                     page?.render(
@@ -97,7 +97,7 @@ class AddByPdfViewModel @Inject constructor(
                 }
                 .addOnFailureListener { e ->
                     Timber.e(e.message.toString())
-                    _textByImages.add("")
+                    _textByImages.add("") // possible to issue-3
                 }
 
         }
