@@ -184,11 +184,11 @@ fun InterestDropDown(
                                 showSnackBar("You can only add interest up to 5")
                             } else {
                                 listFieldHolder.updateTextFieldValue(subject)
-                                checkedState = check
+                                checkedState = true
                             }
                         } else {
                             listFieldHolder.updateTextFieldValue(subject)
-                            checkedState = check
+                            checkedState = false
                         }
                     }
                 )

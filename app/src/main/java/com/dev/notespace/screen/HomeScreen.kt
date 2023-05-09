@@ -332,6 +332,7 @@ private fun HomeDefaultContent(
         derivedStateOf {
             viewModel.userNotes.isNotEmpty() &&
             viewModel.userNotes.size % 5 == 0 &&
+            viewModel.userPagingState.value != PagingState.NextLoadError &&
             defaultState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == viewModel.userNotes.size - 1
         }
     }
